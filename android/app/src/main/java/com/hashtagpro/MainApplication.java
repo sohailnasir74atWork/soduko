@@ -1,4 +1,4 @@
-package com.sudokubyfarhat;
+package com.thinktech_sudoku;
 
 import android.app.Application;
 import com.facebook.react.PackageList;

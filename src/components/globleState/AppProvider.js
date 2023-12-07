@@ -6,14 +6,13 @@ import {
   TestIds,
 } from 'react-native-google-mobile-ads';
 // real ids
-// export  const adUnitIdBanner = 'ca-app-pub-7757740348878509/1353783611';
-// export  const adUnitId = "ca-app-pub-7757740348878509/5604057807"
+// export  const adUnitId = "ca-app-pub-1340655056171083/4343021379"
 const appid = 'ca-app-pub-7757740348878509~3273407932';
 const appidTest = 'ca-app-pub-3940256099942544~3347511713';
 // test ids
-export const adUnitId = TestIds.INTERSTITIAL;
-export const adUnitIdBanner = TestIds.BANNER;
-// export const adUnitId = "123";
+// export const adUnitId = TestIds.INTERSTITIAL;
+// export const adUnitIdBanner = TestIds.BANNER;
+export const adUnitId = "123";
 // export const adUnitIdBanner = "123";
 
 const createAndLoadInterstitial = () => {

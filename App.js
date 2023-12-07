@@ -7,6 +7,7 @@ import SudokuGame from './src/components/SudokuGame';
 import SelectLevels from './src/components/SelectLevel';
 import ContinueScreen from './src/components/ContinueScreen';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import AppProvider from './src/components/globleState/AppProvider';
 
 const Stack = createNativeStackNavigator();
 
@@ -15,11 +16,11 @@ const screenOptions = {
     backgroundColor: 'white',
   },
   headerTitleStyle: {
-    color: 'white',
+    color: 'black', // Set default header text color
     fontSize: 20,
   },
   headerTitleAlign: 'center',
-  headerTintColor: 'white',
+  headerTintColor: 'black', // Set default header icon color
   headerBackTitleVisible: false,
 };
 
@@ -39,7 +40,7 @@ function App() {
         await new Promise(resolve => setTimeout(resolve, 2000));
 
         const gameState = await AsyncStorage.getItem('@SudokuGameState');
-        console.log(gameState);
+        // console.log(gameState);
         setShouldRedirect(!!gameState); // Set shouldRedirect to true if gameState exists
       } catch (error) {
         console.error('Error checking saved game:', error);
@@ -51,47 +52,48 @@ function App() {
     checkSavedGame();
   }, []);
 
-  if (loading) {
-    return <SplashScreen />;
-  }
+  // if (loading) {
+  //   return <SplashScreen />;
+  // }
 
   return (
     <NavigationContainer>
-      <StatusBar
-        barStyle={darkMode ? 'white' : 'dark-content'}
-        backgroundColor={darkMode ? '#2d2d30' : 'white'}
-      />
-      <Stack.Navigator
-        initialRouteName={shouldRedirect ? 'ContinueScreen' : 'SelectLevels'}
-        screenOptions={{
-          ...screenOptions,
-          headerStyle: {
-            backgroundColor: 'white',
-          },
-          headerTitleStyle: {
-            color: 'black',
-            fontSize: 20,
-          },
-        }}>
-        <Stack.Screen
-          name="SelectLevels"
-          options={{ headerShown: false }}
+      <AppProvider>
+        <StatusBar
+          barStyle={darkMode ? 'light-content' : 'dark-content'}
+          backgroundColor={darkMode ? '#2d2d30' : 'white'}
+        />
+        {loading && <SplashScreen/>}
+       {!loading &&  <Stack.Navigator
+          initialRouteName={shouldRedirect ? 'ContinueScreen' : 'SelectLevels'}
+          screenOptions={screenOptions}
         >
-          {(props) => <SelectLevels {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />}
-        </Stack.Screen>
-        <Stack.Screen
-          name="ContinueScreen"
-          options={{ headerShown: false }}
-        >
-          {(props) => <ContinueScreen {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />}
-        </Stack.Screen>
-        <Stack.Screen
-          name="GameScreenClassic"
-          options={{ headerShown: false }}
-        >
-          {(props) => <SudokuGame {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />}
-        </Stack.Screen>
-      </Stack.Navigator>
+          <Stack.Screen
+            name="SelectLevels"
+            options={{ headerShown: false }}
+          >
+            {(props) => (
+              <SelectLevels {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+            )}
+          </Stack.Screen>
+          <Stack.Screen
+            name="ContinueScreen"
+            options={{ headerShown: false }}
+          >
+            {(props) => (
+              <ContinueScreen {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+            )}
+          </Stack.Screen>
+          <Stack.Screen
+            name="GameScreenClassic"
+            options={{ headerShown: false }}
+          >
+            {(props) => (
+              <SudokuGame {...props} toggleDarkMode={toggleDarkMode} darkMode={darkMode} />
+            )}
+          </Stack.Screen>
+        </Stack.Navigator>}
+      </AppProvider>
     </NavigationContainer>
   );
 }

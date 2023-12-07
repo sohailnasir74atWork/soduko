@@ -1,14 +1,32 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Dimensions, ActivityIndicator, BackHandler } from 'react-native';
+import React, {useState, useEffect, useRef, useContext} from 'react';
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  Dimensions,
+  ActivityIndicator,
+  BackHandler,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AwesomeAlert from 'react-native-awesome-alerts';
-import { useNavigation } from '@react-navigation/native';
-import { sudokuGen } from '../dummy';
-
-const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
+import {useNavigation} from '@react-navigation/native';
+import {sudokuGen} from './generateGame';
+import Sound from 'react-native-sound';
+import AppContext from './globleState/AppContext';
+Sound.setCategory('Playback');
+// const correctSound = new Sound('sound.mp3', Sound.MAIN_BUNDLE, error => {
+//   if (error) {
+//     console.error('Failed to load correct sound', error);
+//   }
+// });
+const SudokuGame = ({route, darkMode, toggleDarkMode}) => {
   const navigation = useNavigation();
-  const { level, reset } = route.params;
+  const {level, reset} = route.params;
+  const [clickSound, setClickSound] = useState(null);
+  const [sound, setSound] = useState(true);
+  const [clickSoundW, setClickSoundW] = useState(null);
   const [board, setBoard] = useState([]);
   const initialPuzzleRef = useRef([]);
   const [timer, setTimer] = useState(0);
@@ -20,20 +38,63 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
   const [moves, setMoves] = useState(0);
   const [prevSelectedCell, setPrevSelectedCell] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
+  const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [showHintAlert, setShowHintAlert] = useState(false);
   const [isDarkmode, setIsDarkmode] = useState(false);
-  const [validity, setValidity] = useState(Array.from({ length: 9 }, () => Array(9).fill(true)));
-  const [cellStyles, setCellStyles] = useState(Array.from({ length: 9 }, () => Array(9).fill(styles.text)));
+  const {loaded, showInterstitialAd, adClosed} = useContext(AppContext);
+  const [hints, setHints] = useState(2);
+  const [validity, setValidity] = useState(
+    Array.from({length: 9}, () => Array(9).fill(true)),
+  );
+  const [cellStyles, setCellStyles] = useState(
+    Array.from({length: 9}, () => Array(9).fill(styles.text)),
+  );
   const timerRef = useRef(0);
   const [savedGameLoaded, setSavedGameLoaded] = useState(false);
 
   const STORAGE_KEY = '@SudokuGameState';
+  useEffect(() => {
+    const sound = new Sound('sound.mp3', Sound.MAIN_BUNDLE, error => {
+      if (error) {
+        console.error('Failed to load the sound', error);
+        return;
+      }
 
+      setClickSound(sound);
+    });
+
+    return () => {
+      // Release the sound when the component is unmounted
+      if (clickSound) {
+        clickSound.release();
+      }
+    };
+  }, []);
+  useEffect(() => {
+    const sound = new Sound('wrong.mp3', Sound.MAIN_BUNDLE, error => {
+      if (error) {
+        console.error('Failed to load the sound2', error);
+        return;
+      }
+
+      setClickSoundW(sound);
+    });
+
+    return () => {
+      // Release the sound when the component is unmounted
+      if (clickSoundW) {
+        clickSoundW.release();
+      }
+    };
+  }, []);
+
+  
   useEffect(() => {
     const loadGameState = async () => {
       try {
         if (reset) {
           // If reset is true, use data from route.params
-          const { original, question } = sudokuGen(level);
+          const {original, question} = sudokuGen(level);
           setBoard(question);
           initialPuzzleRef.current = question;
           setSolved(original);
@@ -41,7 +102,7 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
         } else {
           // If reset is false, load data from local storage
           const savedState = await AsyncStorage.getItem(STORAGE_KEY);
-    
+
           if (savedState) {
             const parsedState = JSON.parse(savedState);
             setBoard(parsedState.board);
@@ -62,7 +123,7 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
             setSavedGameLoaded(true);
           } else {
             // If no saved game found, generate a new Sudoku puzzle
-            const { original, question } = sudokuGen(level);
+            const {original, question} = sudokuGen(level);
             setBoard(question);
             initialPuzzleRef.current = question;
             setSolved(original);
@@ -73,7 +134,6 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
         console.error('Error loading game state:', error);
       }
     };
-    
 
     loadGameState();
   }, [level]);
@@ -123,22 +183,32 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
     savedGameLoaded,
   ]);
 
-  // useEffect(() => {
-  //   if (!savedGameLoaded) {
-  //     const { original, question } = sudokuGen(level);
-  //     setBoard(question);
-  //     initialPuzzleRef.current = question;
-  //     setSolved(original);
-  //   }
-  // }, [level, savedGameLoaded]);
-
   useEffect(() => {
     if (checkGameWin()) {
-      console.log('won');
       setIsGameWon(true);
       setIsTimerRunning(false);
     }
   }, [board]);
+  useEffect(() => {
+    let interval;
+  
+    if (isTimerRunning) {
+      interval = setInterval(() => {
+        timerRef.current += 1;
+        setTimer(prevTimer => prevTimer + 1); // Update the state to trigger a re-render
+  
+        // Check if it's time to show the ad (every 20 seconds)
+        // if (timerRef.current % 10 === 0) {
+        //   // Call a function to show the ad
+        //   if(loaded) showInterstitialAd()
+          
+        // }
+      }, 1000);1
+    }
+  
+    return () => clearInterval(interval);
+  }, [isTimerRunning]);
+
 
   const checkGameWin = () => {
     // Check if both board and solved are non-empty arrays
@@ -158,22 +228,8 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
     return true;
   };
 
-  useEffect(() => {
-    let interval;
+ 
 
-    if (isTimerRunning) {
-      interval = setInterval(() => {
-        timerRef.current += 1;
-        setTimer(prevTimer => prevTimer + 1); // Update the state to trigger a re-render
-      }, 1000);
-    }
-    console.log(timer)
-    return () => clearInterval(interval);
-  }, [isTimerRunning]);
-
-  
-
-  
   const updateCellStyles = (row, col, style) => {
     const newStyles = cellStyles.map(rowStyles => [...rowStyles]);
     newStyles[row][col] = style;
@@ -182,6 +238,9 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
   const handleBackPress = () => {
     navigation.navigate('ContinueScreen');
   };
+  const gotoNewGame = () => {
+    navigation.navigate('SelectLevels');
+  };
   useEffect(() => {
     const hardwareBackPressHandler = () => {
       // Handle hardware back press
@@ -189,10 +248,9 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
       return true; // Returning true prevents the default behavior (going back)
     };
 
-    // Subscribe to hardware back press event
     const backHandler = BackHandler.addEventListener(
       'hardwareBackPress',
-      hardwareBackPressHandler
+      hardwareBackPressHandler,
     );
 
     return () => {
@@ -200,6 +258,9 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
       backHandler.remove();
     };
   }, []);
+  // useEffect(() => {
+    
+  // }, [loaded, moves, showInterstitialAd]);
   
   const handleCellPress = (row, col) => {
     setSelectedCell({row, col});
@@ -208,37 +269,34 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
   const removeCellText = () => {
     if (selectedCell) {
       const {row, col} = selectedCell;
-      // if (initialPuzzleRef.current[row][col] !== 0) {
-      //   console.log(initialPuzzleRef.current[row][col])
-      //   return;
-      // }
-
       const updatedBoard = [...board];
-      updatedBoard[row][col] = 0;
-      setBoard(updatedBoard);
 
-      // Create a new copy of initialPuzzle before updating it
+      // Check if the cell is not empty and the value is NOT equal to the solved value
+      if (board[row][col] !== 0 && board[row][col] !== solved[row][col]) {
+        updatedBoard[row][col] = 0;
+        setBoard(updatedBoard);
+        const updatedValidity = validity.map(rowValidity => [...rowValidity]);
+        updatedValidity[row][col] = true;
+        setValidity(updatedValidity);
+        setMoves(prevMoves => prevMoves + 1);
+        if (loaded && moves > 0 && moves % 10 === 0) {
+          showInterstitialAd();
+        }
 
-      // Reset the validity for the cleared cell
-      const updatedValidity = validity.map(rowValidity => [...rowValidity]);
-      updatedValidity[row][col] = true;
-      setValidity(updatedValidity);
-
-      setMoves(prevMoves => prevMoves + 1);
-
-      // Reset the style for the cleared cell
-      if (darkMode) {
-        updateCellStyles(row, col, styles.dark);
-      } else {
-        updateCellStyles(row, col, styles.text);
+        // Reset the style for the cleared cell
+        if (darkMode) {
+          updateCellStyles(row, col, styles.dark);
+        } else {
+          updateCellStyles(row, col, styles.text);
+        }
       }
     }
   };
+  
 
   const handleWinAlertClose = () => {
     setIsGameWon(false);
     navigation.goBack();
-    // You can add any additional logic you want to perform when the user closes the win alert
   };
 
   const renderWinAlert = () => {
@@ -272,7 +330,7 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
         }}
         contentContainerStyle={{
           width: 300,
-          height: 180,
+          height: 250,
         }}
         messageStyle={{
           fontSize: 16,
@@ -282,42 +340,81 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
       />
     );
   };
-
+  const getMoreHints = () => {
+    if (loaded) {
+      showInterstitialAd();
+      setHints(2);
+      setShowHintAlert(!showHintAlert);
+      setIsTimerRunning(!isTimerRunning);
+    } else {
+      setHints(2);
+      setShowHintAlert(!showHintAlert);
+      setIsTimerRunning(!isTimerRunning);
+    }
+  };
   const handleNumberPress = number => {
-    const {row, col} = selectedCell;
     if (selectedCell) {
-      // console.log(initialPuzzle[row][col]);
-      // // Check if the selected cell is part of the initial puzzle (not inserted by the user)
-      // if (initialPuzzle[row][col] !== 0) {
-      //   return; // Do nothing if the cell is part of the initial puzzle
-      // }
+      const {row, col} = selectedCell;
       const updatedBoard = [...board];
-      const isValidMove = checkMoveValidity(row, col, number);
 
-      // Check if the user's input matches the corresponding value in the solved puzzle
-      const isCorrectMove = solved[row][col] === number;
+      // Check if the cell is empty or the value is NOT equal to the solved value
+      if (board[row][col] === 0 || board[row][col] !== solved[row][col]) {
+        const isValidMove = checkMoveValidity(row, col, number);
+        const isCorrectMove = solved[row][col] === number;
 
-      updatedBoard[row][col] = number;
-      setBoard(updatedBoard);
-      setMoves(prevMoves => prevMoves + 1);
+        updatedBoard[row][col] = number;
+        setBoard(updatedBoard);
+        setMoves(prevMoves => prevMoves + 1);
+        if (loaded && moves > 0 && moves % 10 === 0) {
+          showInterstitialAd();
+        }
 
-      // Add logic to update the validity state for the selected cell
-      const updatedValidity = [...validity];
-      updatedValidity[row][col] = isValidMove;
-      setValidity(updatedValidity);
+        const updatedValidity = validity.map(rowValidity => [...rowValidity]);
+        updatedValidity[row][col] = isValidMove;
+        setValidity(updatedValidity);
 
-      // Update the style based on correctness
-      const style = isCorrectMove ? styles.correct : styles.wrong;
-      updateCellStyles(row, col, style);
+        const style = isCorrectMove ? styles.correct : styles.wrong;
+        updateCellStyles(row, col, style);
 
-      // Increment errors if the move is incorrect
-      if (!isCorrectMove) {
-        setErrors(prevErrors => prevErrors + 1);
+        // Increment errors if the move is incorrect
+        if (!isCorrectMove) {
+          setErrors(prevErrors => prevErrors + 1);
+          if (clickSoundW && sound) {
+            clickSoundW.play();
+          }
+        }
+
+        if (clickSound && sound) {
+          clickSound.play();
+        }
       }
     }
   };
 
   // ... (other functions)
+  const checkErrorsForLoss = () => {
+    if (errors % 3 === 0 && errors > 0) {
+      // Show the lose popup here
+      setIsTimerRunning(!isTimerRunning);
+      setShowErrorAlert(!showErrorAlert);
+    }
+  };
+  const handleSound = () => {
+    setSound(!sound);
+  };
+  const handleErrorPress = () => {
+    if (loaded) {
+      showInterstitialAd();
+      setIsTimerRunning(!isTimerRunning);
+      setShowErrorAlert(!showErrorAlert);
+    } else {
+      setIsTimerRunning(!isTimerRunning);
+      setShowErrorAlert(!showErrorAlert);
+    }
+  };
+  useEffect(() => {
+    checkErrorsForLoss();
+  }, [errors]);
 
   const renderBoard = () => {
     return board.map((row, rowIndex) => (
@@ -326,10 +423,7 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
           const isSelectedCell =
             selectedCell &&
             (selectedCell.row === rowIndex || selectedCell.col === colIndex);
-
           const cellStyle = cellStyles[rowIndex][colIndex];
-
-          // Check if the selected cell has a value
           const isMatchingCell =
             selectedCell &&
             cell !== 0 &&
@@ -339,11 +433,12 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
 
           // Check if the current cell has the same value as the selected cell
           const isSameValueAsSelected =
-            selectedCell &&
-            Math.floor(selectedCell.row / 3) === Math.floor(rowIndex / 3) &&
-            Math.floor(selectedCell.col / 3) === Math.floor(colIndex / 3) &&
-            cell !== 0 &&
-            cell === board[selectedCell.row][selectedCell.col];
+  selectedCell &&
+  Math.floor(selectedCell.row / 3) === Math.floor(rowIndex / 3) &&
+  Math.floor(selectedCell.col / 3) === Math.floor(colIndex / 3) &&
+  cell !== 0 &&
+  cell === board[selectedCell.row][selectedCell.col];
+
           const isBoxSelected =
             selectedCell &&
             Math.floor(selectedCell.row / 3) === Math.floor(rowIndex / 3) &&
@@ -361,30 +456,30 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
                   },
                 ],
                 {width: cellWidth},
-                rowIndex % 3 === 0 && {borderTopWidth: 2},
-                colIndex % 3 === 0 && {borderLeftWidth: 2},
-                rowIndex === 8 && {borderBottomWidth: 2},
-                colIndex === 8 && {borderRightWidth: 2},
+                rowIndex % 3 === 0 && {borderTopWidth: 3},
+                colIndex % 3 === 0 && {borderLeftWidth: 3},
+                rowIndex === 8 && {borderBottomWidth: 3},
+                colIndex === 8 && {borderRightWidth: 3},
                 {borderColor: 'black'},
                 cell === 0 && styles.emptyCell,
-                isSelectedCell && {backgroundColor: '#D3F8D3'},
+                isSelectedCell && {backgroundColor: '#dCFAFF'},
                 selectedCell &&
                   Math.floor(selectedCell.row / 3) ===
                     Math.floor(rowIndex / 3) &&
                   Math.floor(selectedCell.col / 3) ===
-                    Math.floor(colIndex / 3) && {backgroundColor: '#D3F8D3'},
+                    Math.floor(colIndex / 3) && {backgroundColor: '#dCFAFF'},
                 isSelectedCell &&
-                  cellStyle !== styles.text && {backgroundColor: '#D3F8D3'},
+                  cellStyle !== styles.text && {backgroundColor: '#dCFAFF'},
                 isSameValueAsSelected &&
-                  isSelectedCell && {backgroundColor: '#FFB6C1'},
+                  isSelectedCell && {backgroundColor: '#FFCDD2'},//pink
                 isMatchingCell &&
                   isSelectedCell &&
-                  !isSameValueAsSelected && {backgroundColor: '#FFB6C1'},
+                  !isSameValueAsSelected && {backgroundColor: '#FFCDD2'},//pink
                 cellStyle,
                 selectedCell &&
                   selectedCell.row === rowIndex &&
                   selectedCell.col === colIndex && {
-                    backgroundColor: 'lightgreen',
+                    backgroundColor: '#AEDFF7',
                   },
               ]}
               onPress={() => handleCellPress(rowIndex, colIndex)}>
@@ -428,13 +523,77 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
   };
   const screenWidth = Dimensions.get('window').width;
   const cellWidth = screenWidth / 9 - 1;
+  const handlePressHints = () => {
+    if (hints > 0) {
+      const emptyCells = findEmptyCells();
+
+      if (emptyCells.length > 0) {
+        const randomIndex = Math.floor(Math.random() * emptyCells.length);
+        const {row, col} = emptyCells[randomIndex];
+        if (clickSound && sound) {
+          clickSound.play();
+        }
+        const updatedBoard = [...board];
+        const correctNumber = solved[row][col];
+
+        updatedBoard[row][col] = correctNumber;
+        setBoard(updatedBoard);
+
+        setMoves(prevMoves => prevMoves + 1);
+        if (loaded && moves > 0 && moves % 10 === 0) {
+          showInterstitialAd();
+        }
+
+        // Update the validity state for the filled cell
+        const updatedValidity = [...validity];
+        updatedValidity[row][col] = true;
+        setValidity(updatedValidity);
+
+        // Update the style for the filled cell
+        const style = styles.correct;
+        updateCellStyles(row, col, style);
+
+        setHints(prevHints => prevHints - 1);
+        setSelectedCell({row, col}); // Auto-select the cell
+      } else {
+        // Show an alert when there are no empty cells
+        showAlertFunction(
+          'No Empty Cells',
+          'There are no empty cells to fill.',
+        );
+      }
+    } else {
+      // Show an alert when there are no hints available
+      setShowHintAlert(!showHintAlert);
+      setIsTimerRunning(!isTimerRunning);
+    }
+  };
+
+  const showAlertFunction = (title, message) => {
+    // Customize this function to display alerts in your app
+    alert(`${title}\n${message}`);
+  };
+
+  const findEmptyCells = () => {
+    const emptyCells = [];
+
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (board[i][j] === 0) {
+          emptyCells.push({row: i, col: j});
+        }
+      }
+    }
+
+    return emptyCells;
+  };
+
   return (
     <View
       style={[
         styles.container,
         {backgroundColor: darkMode ? '#2d2d30' : 'white'},
       ]}>
-       {savedGameLoaded ? (<>
       {renderWinAlert()}
       <AwesomeAlert
         show={showAlert}
@@ -467,38 +626,124 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
         }}
         contentContainerStyle={{
           width: 300, // Adjust width
-          height: 180, // Adjust height
+          height: 250, // Adjust height
         }}
         messageStyle={{
           fontSize: 16, // Adjust font size
           fontWeight: 'bold',
           paddingVertical: 10,
+          marginVertical: 30,
         }}
       />
-
+      <AwesomeAlert
+        show={showErrorAlert}
+        showProgress={false}
+        title="You Lose"
+        titleStyle={{
+          fontSize: 20,
+          textAlign: 'center',
+          fontWeight: 'bold',
+        }}
+        message={`Moves: ${moves}   Errors:${errors}    Time:${formatTime(
+          timerRef.current,
+        )}`}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        cancelText="New Game"
+        confirmText="Second Chnace"
+        confirmButtonColor="#DD6B55"
+        confirmButtonTextStyle={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          borderRadius: 10,
+        }}
+        onCancelPressed={() => {
+          gotoNewGame(); // Replace with your back button function
+        }}
+        onConfirmPressed={() => {
+          handleErrorPress();
+        }}
+        overlayStyle={{
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        }}
+        contentContainerStyle={{
+          width: 300,
+          height: 250,
+        }}
+        messageStyle={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          paddingVertical: 10,
+          marginVertical: 30,
+        }}
+      />
+      <AwesomeAlert
+        show={showHintAlert}
+        showProgress={false}
+        title="Out of Hints ?"
+        titleStyle={{
+          fontSize: 20,
+          textAlign: 'center',
+          fontWeight: 'bold',
+        }}
+        message={`Moves: ${moves}   Errors:${errors}    Time:${formatTime(
+          timerRef.current,
+        )}`}
+        closeOnTouchOutside={true}
+        closeOnHardwareBackPress={false}
+        showCancelButton={false}
+        showConfirmButton={true}
+        confirmText="Get More Hints"
+        confirmButtonColor="#DD6B55"
+        confirmButtonTextStyle={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          borderRadius: 10,
+        }}
+        onConfirmPressed={() => {
+          getMoreHints();
+        }}
+        overlayStyle={{
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        }}
+        contentContainerStyle={{
+          width: 300,
+          height: 250,
+        }}
+        messageStyle={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          paddingVertical: 10,
+          marginVertical: 30,
+        }}
+      />
       <View style={styles.settingContainer}>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={{marginRight: 10}} onPress={handleBackPress}>
-            <Ionicons name={'arrow-back'} size={30} color="black" />
+          <Text onPress={handleBackPress}>
+            <Ionicons
+              name={'arrow-back'}
+              size={40}
+              color={darkMode ? 'grey' : '#25D366'}
+            />
           </Text>
-          <Ionicons name={'logo-angular'} size={30} color="#3b5998" />
         </View>
         <Text onPress={handlePausePress}>
           <Ionicons
             name={isTimerRunning ? 'pause-circle' : 'play-circle'}
-            size={30}
+            size={40}
             color="green"
           />
         </Text>
         <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={{marginRight: 10}} onPress={toggleDarkMode}>
+          <Text onPress={toggleDarkMode}>
             <Ionicons
-              name={isDarkmode ? 'sunny' : 'contrast'}
-              size={30}
-              color="grey"
+              name={darkMode ? 'sunny-sharp' : 'sunny-sharp'}
+              size={35}
+              color={darkMode ? 'lightgrey' : 'grey'}
             />
           </Text>
-          <Ionicons name={'settings'} size={30} color="tomato" />
         </View>
       </View>
 
@@ -509,13 +754,6 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
             Moves:{moves}
           </Text>
           <Text style={styles.mistakesText}>Mistakes: {errors}</Text>
-          {/* <Text style={styles.timerText} >
-            <Ionicons
-              
-              size={20}
-              color="grey"
-            />
-          </Text> */}
           <View style={[styles.timerText]}>
             <Ionicons name="alarm" size={20} color="grey" />
             <Text
@@ -525,33 +763,125 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
           </View>
         </View>
       </View>
-      <View style={styles.mainSudokuGrid}>{renderBoard()}</View>
-
+      {savedGameLoaded ? (
+        <>
+          <View style={styles.mainSudokuGrid}>{renderBoard()}</View>
+        </>
+      ) : (
+        <ActivityIndicator
+          style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}
+          size="large"
+        />
+      )}
+      <View style={styles.settingContainer}>
+        <View
+          style={{
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}>
+          <Text onPress={handleSound}>
+            <Ionicons
+              name={sound ? 'volume-high' : 'volume-mute'}
+              size={30}
+              color={darkMode ? '#25D366' : '#128C7E'}
+            />
+          </Text>
+          <Text style={{fontSize: 10, color: '#128C7E', fontWeight: 'bold'}}>
+            Sound
+          </Text>
+        </View>
+        {/* <View
+          style={{
+            alignItems: 'center',
+            justifyContent: 'center',
+            backgroundColor:"#128C7E",
+            paddingHorizontal:20
+          }}>
+          {level===10 && <Text style={{fontWeight:"bold", color:"white", fontSize:16}}>
+            Very Easy
+          </Text>}
+          {level===23 && <Text style={{fontWeight:"bold", color:"white", fontSize:16}}>
+            Easy
+          </Text>}
+          {level===38 && <Text style={{fontWeight:"bold", color:"white", fontSize:16}}>
+            Medium
+          </Text>}
+          {level===47 && <Text style={{fontWeight:"bold", color:"white", fontSize:16}}>
+            Hard
+          </Text>}
+          {level===56 && <Text style={{fontWeight:"bold", color:"white", fontSize:16}}>
+            Very Hard
+          </Text>}
+          
+         
+        </View> */}
+        <TouchableOpacity onPress={handlePressHints}>
+          <View style={{flexDirection: 'column', alignItems: 'center'}}>
+            <View style={{position: 'relative'}}>
+              <Ionicons
+                name="bulb"
+                size={30}
+                color={hints ? 'tomato' : 'grey'}
+              />
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: '50%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: 'white',
+                    fontWeight: 'bold',
+                  }}>
+                  {hints}
+                </Text>
+              </View>
+            </View>
+            <Text style={{fontSize: 10, color: 'tomato', fontWeight: 'bold'}}>
+              Hints
+            </Text>
+          </View>
+        </TouchableOpacity>
+      </View>
       <View style={styles.numbers}>
         {[1, 2, 3, 4, 5].map(number => (
           <TouchableOpacity
             key={number}
             style={[
               styles.number,
-              {width: cellWidth, backgroundColor: darkMode ? 'grey' : 'white'},
+              {
+                width: cellWidth,
+                backgroundColor: darkMode ? 'grey' : 'white',
+              },
             ]}
             onPress={() => handleNumberPress(number)}>
-            <Text style={[styles.text, {color: darkMode ? 'white' : 'grey'}]}>
+            <Text style={[styles.text2, {color: darkMode ? 'white' : 'grey'}]}>
               {number}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
+
       <View style={[styles.numbers]}>
         {[6, 7, 8, 9].map(number => (
           <TouchableOpacity
             key={number}
             style={[
               styles.number,
-              {width: cellWidth, backgroundColor: darkMode ? 'grey' : 'white'},
+              {
+                width: cellWidth,
+                backgroundColor: darkMode ? 'grey' : 'white',
+              },
             ]}
             onPress={() => handleNumberPress(number)}>
-            <Text style={[styles.text, {color: darkMode ? 'white' : 'grey'}]}>
+            <Text style={[styles.text2, {color: darkMode ? 'white' : 'grey'}]}>
               {number}
             </Text>
           </TouchableOpacity>
@@ -559,19 +889,26 @@ const SudokuGame = ({ route, darkMode, toggleDarkMode }) => {
         <TouchableOpacity
           style={[
             styles.number,
-            {width: cellWidth, backgroundColor: darkMode ? 'grey' : 'white'},
+            {
+              width: cellWidth,
+              backgroundColor: darkMode ? 'grey' : 'white',
+            },
           ]}>
           <Text
             style={[styles.text, {color: darkMode ? 'white' : 'grey'}]}
             onPress={removeCellText}>
-            <Ionicons name="close-circle-outline" size={30} color="red" />
+            <Ionicons name="backspace" size={20} color="tomato" />
           </Text>
-          <Text style={{fontSize: 10}}>Erase</Text>
+          <Text
+            style={{
+              fontSize: 10,
+              fontWeight: 'bold',
+              color: darkMode ? 'white' : 'tomato',
+            }}>
+            Erase
+          </Text>
         </TouchableOpacity>
-      </View></>) : (<ActivityIndicator
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
-          size="large"
-        />)}
+      </View>
     </View>
   );
 };
@@ -582,6 +919,8 @@ const styles = StyleSheet.create({
     // justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+    // height: '100%',
+    minHeight: '100%',
   },
   mainSudokuGrid: {
     flexDirection: 'column',
@@ -591,7 +930,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   mainGridCell: {
-    // height: 40,
+    maxHeight: 40,
     // borderRadius: 2,
     backgroundColor: 'white',
     alignItems: 'center',
@@ -601,7 +940,6 @@ const styles = StyleSheet.create({
     // Add border styling
     borderColor: 'black',
     borderWidth: 0.5,
-    // Shadow and elevation removed for clarity
   },
 
   emptyCell: {
@@ -611,11 +949,7 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  // timerContainer: {
-  //   flexDirection: 'row',
-  //   justifyContent: "space-evenly",
-  //   width: '100%',
-  // },
+
   timerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -630,6 +964,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
 
     // marginLeft: 8, // Adjust the margin as needed
   },
@@ -645,9 +981,9 @@ const styles = StyleSheet.create({
   settingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '80%',
-    marginTop: 20,
-    marginBottom: 30,
+    width: '85%',
+    marginTop: 15,
+    marginBottom: 10,
   },
   pauseBtn: {
     height: 40,
@@ -664,17 +1000,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginTop: 5, // Adjusted marginTop
   },
 
   number: {
-    height: 50,
+    // maxHeight: 60,
     borderRadius: 8,
     backgroundColor: 'white',
     color: '#000',
     alignItems: 'center',
     justifyContent: 'center',
-    fontSize: 16,
+    fontSize: 14,
     cursor: 'pointer',
     marginVertical: 5,
     flex: 1,
@@ -691,7 +1026,11 @@ const styles = StyleSheet.create({
 
   text: {
     color: 'grey',
-    fontSize: 25,
+    fontSize: 30,
+  },
+  text2: {
+    color: 'grey',
+    fontSize: 36,
   },
   dark: {
     color: 'grey',
@@ -705,8 +1044,11 @@ const styles = StyleSheet.create({
     fontSize: 25,
   },
   correct: {
-    color: 'blue',
+    color: '#25D366',
     fontSize: 25,
+  },
+  spacer: {
+    minHeight: '100%',
   },
 });
 

@@ -1,24 +1,30 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, {useContext} from 'react';
+import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import GridWithAnimation from '../grid';
+import AppContext from './globleState/AppContext';
 
 const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
-//   const navigation = useNavigation();
+  const {loaded, showInterstitialAd} = useContext(AppContext);
+
+  //   const navigation = useNavigation();
 
   const handleNewGame = () => {
     // Handle logic for starting a new game
-    navigation.navigate('SelectLevels', { level: "" });
+    if(loaded){showInterstitialAd()}
+
+    navigation.navigate('SelectLevels', {level: ''});
   };
 
   const handleContinue = async () => {
+    if(loaded){showInterstitialAd()}
     try {
       const savedState = await AsyncStorage.getItem('@SudokuGameState');
 
       if (savedState) {
         // Continue with the saved game state
-        navigation.navigate('GameScreenClassic', { loadedGame: true });
+        navigation.navigate('GameScreenClassic', {loadedGame: true});
       } else {
         // No saved game state found, prompt user to start a new game
         alert('No saved game state found. Please start a new game.');
@@ -29,26 +35,45 @@ const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: darkMode ? '#2d2d30' : 'white' }]}>
-        <View style={styles.settingContainer}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text style={{ marginRight: 10 }} onPress={toggleDarkMode}>
-            <Ionicons name={'contrast'} size={30} color="grey" />
+    <View
+      style={[
+        styles.container,
+        {backgroundColor: darkMode ? '#2d2d30' : 'white'},
+      ]}>
+      <View style={styles.settingContainer}>
+        <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Text style={{marginRight: 10}} onPress={toggleDarkMode}>
+          <Ionicons
+              name={darkMode ? 'sunny-sharp' : 'sunny-sharp'}
+              size={35}
+              color={darkMode ? 'lightgrey' : 'grey'}
+            />
           </Text>
-          <Ionicons name={'settings'} size={30} color="tomato" />
+          {/* <Ionicons name={'settings'} size={30} color="tomato" /> */}
         </View>
       </View>
-      <Text style={[styles.title, { color: darkMode ? 'white' : 'black' }]}>Sudoku Classic</Text>
+      <View
+        style={{
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginVertical: 30,
+          width: '50%',
+          marginTop: 100,
+        }}>
+        <View style={{marginRight: 10}}>{<GridWithAnimation />}</View>
+        <View>
+          <Text style={[styles.title, {color: darkMode ? 'white' : 'black'}]}>
+            Classic Sudoku
+          </Text>
+        </View>
+      </View>
       <TouchableOpacity
-        style={[styles.button, { backgroundColor: '#128C7E' }]}
-        onPress={handleNewGame}
-      >
+        style={[styles.button, {backgroundColor: '#128C7E'}]}
+        onPress={handleNewGame}>
         <Text style={styles.buttonText}>New Game</Text>
       </TouchableOpacity>
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleContinue}
-      >
+      <TouchableOpacity style={styles.button} onPress={handleContinue}>
         <Text style={styles.buttonText}>Continue</Text>
       </TouchableOpacity>
     </View>
@@ -64,8 +89,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
-    marginTop: 100,
   },
   button: {
     backgroundColor: '#128C7E',

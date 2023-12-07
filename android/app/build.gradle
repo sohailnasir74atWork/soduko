@@ -75,13 +75,13 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.sudokubyfarhat"
+    namespace "com.thinktech_sudoku"
     defaultConfig {
-        applicationId "com.sudokubyfarhat"
+        applicationId "com.thinktech_sudoku"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
-        versionName "1.5"
+        versionCode 1
+        versionName "1.0"
     }
    signingConfigs {
          debug {
