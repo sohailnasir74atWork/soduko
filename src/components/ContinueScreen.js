@@ -4,17 +4,20 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import GridWithAnimation from '../grid';
 import AppContext from './globleState/AppContext';
+import SettingContainer from './helper/SettingContainer';
+import { dark2_bg_color, dark2_text_color, dark_bg_color, dark_text_color, light2_bg_color, light2_text_color, light_bg_color, light_text_color } from './veriables';
 
-const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
-  const {loaded, showInterstitialAd} = useContext(AppContext);
-
+const ContinueScreen = ({navigation, route}) => {
+  const {loaded, showInterstitialAd, mode, toggleTheme} = useContext(AppContext);
+  const {level } = route.params;
+  // console.log(level)
   //   const navigation = useNavigation();
 
   const handleNewGame = () => {
     // Handle logic for starting a new game
     if(loaded){showInterstitialAd()}
 
-    navigation.navigate('SelectLevels', {level: ''});
+    navigation.navigate('levels', {level: ''});
   };
 
   const handleContinue = async () => {
@@ -24,7 +27,7 @@ const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
 
       if (savedState) {
         // Continue with the saved game state
-        navigation.navigate('GameScreenClassic', {loadedGame: true});
+        navigation.navigate('game', {loadedGame: true, level:level});
       } else {
         // No saved game state found, prompt user to start a new game
         alert('No saved game state found. Please start a new game.');
@@ -38,20 +41,19 @@ const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
     <View
       style={[
         styles.container,
-        {backgroundColor: darkMode ? '#2d2d30' : 'white'},
+        {backgroundColor: mode === 'light'
+        ? light_bg_color
+        : mode === 'light2'
+        ? light2_bg_color
+        : mode === 'dark'
+        ? dark_bg_color
+        : mode === 'dark2'
+        ? dark2_bg_color
+        : 'default'},
       ]}>
-      <View style={styles.settingContainer}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text style={{marginRight: 10}} onPress={toggleDarkMode}>
-          <Ionicons
-              name={darkMode ? 'sunny-sharp' : 'sunny-sharp'}
-              size={35}
-              color={darkMode ? 'lightgrey' : 'grey'}
-            />
-          </Text>
-          {/* <Ionicons name={'settings'} size={30} color="tomato" /> */}
-        </View>
-      </View>
+     
+      <SettingContainer mode={mode} toggleTheme={toggleTheme} countinue/>
+
       <View
         style={{
           flexDirection: 'row',
@@ -63,7 +65,16 @@ const ContinueScreen = ({navigation, darkMode, toggleDarkMode}) => {
         }}>
         <View style={{marginRight: 10}}>{<GridWithAnimation />}</View>
         <View>
-          <Text style={[styles.title, {color: darkMode ? 'white' : 'black'}]}>
+          <Text style={[styles.title, {color: mode === 'light'
+                ? light_text_color
+                : mode === 'light1'
+                ? light2_text_color
+                : mode === 'dark'
+                ? dark_text_color
+                : mode === 'dark2'
+                ? dark2_text_color
+                : 'default' // Default color, replace with your fallback color
+            }]}>
             Classic Sudoku
           </Text>
         </View>
@@ -103,13 +114,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
   },
-  settingContainer: {
-    justifyContent: 'center',
-    width: '100%',
-    alignItems: 'flex-end',
-    marginTop: 30,
-    marginRight: 50,
-  },
+  // settingContainer: {
+  //   justifyContent: 'center',
+  //   width: '100%',
+  //   alignItems: 'flex-end',
+  //   marginTop: 30,
+  //   marginRight: 50,
+  // },
 });
 
 export default ContinueScreen;

@@ -5,15 +5,20 @@ import {
   AdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
-// real ids
-// export  const adUnitId = "ca-app-pub-1340655056171083/4343021379"
-const appid = 'ca-app-pub-7757740348878509~3273407932';
-const appidTest = 'ca-app-pub-3940256099942544~3347511713';
-// test ids
-// export const adUnitId = TestIds.INTERSTITIAL;
-// export const adUnitIdBanner = TestIds.BANNER;
-export const adUnitId = "123";
-// export const adUnitIdBanner = "123";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  STORAGE_KEY,
+  STORAGE_KEY_Battels,
+  STORAGE_KEY_First_Play,
+  STORAGE_KEY_STATS,
+} from '../veriables';
+
+// Real Ad Unit ID
+// const adUnitId = "ca-app-pub-1340655056171083/4343021379";
+// Test Ad Unit ID
+// const adUnitId = TestIds.INTERSTITIAL;
+
+const adUnitId = '123'; // Placeholder Ad Unit ID for testing
 
 const createAndLoadInterstitial = () => {
   const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
@@ -27,22 +32,101 @@ const createAndLoadInterstitial = () => {
 const AppProvider = ({children}) => {
   const [loaded, setLoaded] = useState(false);
   const [interstitial, setInterstitial] = useState(null);
-  const [myArray, setMyArray] = useState({});
-  const [categoryNames, setCategoryNames] = useState([]);
-  const [adClosed, setAdClosed] = useState(false); // State to track ad closed event
+  const [adClosed, setAdClosed] = useState(false);
+  const [mode, setMode] = useState('light');
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirect, setreDirect] = useState(true);
+  const [globelLevel, setGlobelLevel] = useState();
+  const [activeCell, setActiveCell] = useState(1);
+  const [activeCells, setActiveCells] = useState([]);
 
-  
   useEffect(() => {
-    // Create and load the interstitial ad only once when the component mounts
+    const loadGameState = async () => {
+      try {
+        // Get the current game state from local storage
+        const storedGameState = await AsyncStorage.getItem(
+          STORAGE_KEY_First_Play,
+        );
+
+        if (storedGameState) {
+          setreDirect(false);
+        }
+      } catch (error) {
+        console.error('Error loading game state from storage:', error);
+      }
+    };
+    loadGameState();
+  }, []);
+  useEffect(() => {
+    const loadGameState = async () => {
+      try {
+        // Get the current game state from local storage
+        const storedGameState = await AsyncStorage.getItem(STORAGE_KEY_Battels);
+        // console.log('first', storedGameState);
+        if (storedGameState) {
+          const parsedGameState = JSON.parse(storedGameState);
+          setActiveCell(parsedGameState.activeCell);
+          setActiveCells(parsedGameState.activeCells);
+        }
+      } catch (error) {
+        console.error('Error loading game state from storage:', error);
+      }
+    };
+
+    loadGameState();
+  }, []);
+
+  useEffect(() => {
+    // Save the updated game stats back to local storage
+    const saveGameState = async () => {
+      try {
+        const gameState = {
+          activeCell,
+          activeCells,
+        };
+
+        await AsyncStorage.setItem(
+          STORAGE_KEY_Battels,
+          JSON.stringify(gameState),
+        );
+      } catch (error) {
+        console.error('Error saving game state to storage:', error);
+      }
+    };
+
+    saveGameState();
+  }, [activeCell, activeCells]); // Run the effect whenever gameStats changes
+
+  // console.log(activeCells)
+  const toggleTheme = color => {
+    setMode(color);
+  };
+
+  useEffect(() => {
     setInterstitial(createAndLoadInterstitial());
-    // Create and load the open app ad only once when the component mounts
-    // Clean up the interstitial ad when the component unmounts
+
     return () => {
       if (interstitial) {
         interstitial.removeAllListeners();
       }
     };
-  }, []); // Empty dependency array ensures this effect runs once
+  }, []);
+  useEffect(() => {
+    const loadGameState = async () => {
+      try {
+        const storedGameState = await AsyncStorage.getItem(STORAGE_KEY);
+        if (storedGameState !== null) {
+          const gameStateObject = JSON.parse(storedGameState);
+          setGlobelLevel(gameStateObject['level']);
+          setShouldRedirect(true);
+        }
+      } catch (error) {
+        console.error('Error loading game state from storage:', error);
+      }
+    };
+
+    loadGameState();
+  }, []);
 
   useEffect(() => {
     const unsubscribeInterstitial = interstitial?.addAdEventListener(
@@ -51,12 +135,12 @@ const AppProvider = ({children}) => {
         setLoaded(true);
       },
     );
+
     const unsubscribeAdClosed = interstitial?.addAdEventListener(
       AdEventType.CLOSED,
       () => {
-        // console.log('Nice', adClosed);
-        setAdClosed(true); // You can set adClosed to true if you want to track that the ad was closed.
-        setInterstitial(createAndLoadInterstitial); // Load a new ad when the current ad is closed.
+        setAdClosed(true);
+        setInterstitial(createAndLoadInterstitial);
       },
     );
 
@@ -71,17 +155,26 @@ const AppProvider = ({children}) => {
       interstitial.show();
       setAdClosed(false);
     } else {
-      // Optionally, you can display a message or take another action when the ad is not loaded.
       console.error('Interstitial ad not loaded.');
     }
   }, [interstitial, loaded]);
-  
-  ////////////////////////////////data logiv///////////////
+
   return (
     <AppContext.Provider
       value={{
         loaded,
         showInterstitialAd,
+        mode,
+        toggleTheme,
+        shouldRedirect,
+        globelLevel,
+        setShouldRedirect,
+        redirect,
+        setreDirect,
+        setActiveCell,
+        activeCell,
+        setActiveCells,
+        activeCells,
       }}>
       {children}
     </AppContext.Provider>
