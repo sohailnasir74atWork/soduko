@@ -30,6 +30,7 @@ import {
   selected_cell_color,
   selected_rows_color,
 } from './veriables';
+import FacebookContent from './globleState/text';
 Sound.setCategory('Playback');
 
 // const correctSound = new Sound('sound.mp3', Sound.MAIN_BUNDLE, error => {
@@ -65,6 +66,7 @@ const SudokuGame = ({route}) => {
   const [showAlert, setShowAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [notes, setNotes] = useState(Array.from({ length: 9 }, () => Array(9).fill([])));
+  const [penOn, setPenOn] = useState(false)
   const [showHintAlert, setShowHintAlert] = useState(false);
   const {
     loaded,
@@ -121,6 +123,7 @@ const SudokuGame = ({route}) => {
       }
     };
   }, []);
+  const handlePen = ()=>{setPenOn(!penOn)}
   const handleNotePress = (note) => {
     const updatedNotes = [...notes];
     if (selectedCell) {
@@ -331,7 +334,12 @@ const SudokuGame = ({route}) => {
     newStyles[row][col] = style;
     setCellStyles(newStyles);
   };
+  const avatarRef = React.createRef()
+  const firstLineRef = React.createRef()
+  // const secondLineRef = React.createRef()
+  // const thirdLineRef = React.createRef()
 
+ 
   const handleBackPress = () => {
     setPlayedTime(timer);
     // console.log(timer);
@@ -531,6 +539,25 @@ const SudokuGame = ({route}) => {
   useEffect(() => {
     setIsLoading(false);
   }, []);
+  const isNoteMatching = (note, rowIndex, colIndex) => {
+    // Check if the note already exists in the same row
+    const isNoteInRow = board[rowIndex].includes(note);
+  
+    // Check if the note already exists in the same column
+    const isNoteInColumn = board.some(row => row[colIndex] === note);
+  
+    // Check if the note already exists in the same 3x3 box
+    const boxStartRow = Math.floor(rowIndex / 3) * 3;
+    const boxStartCol = Math.floor(colIndex / 3) * 3;
+    const isNoteInBox = board
+      .slice(boxStartRow, boxStartRow + 3)
+      .some(row =>
+        row.slice(boxStartCol, boxStartCol + 3).includes(note)
+      );
+  
+    return isNoteInRow || isNoteInColumn || isNoteInBox;
+  };
+  
   const renderBoard = () => {
     return board.map((row, rowIndex) => (
       <View key={rowIndex} style={styles.row}>
@@ -541,7 +568,7 @@ const SudokuGame = ({route}) => {
             Math.floor(selectedCell.col / 3) === Math.floor(colIndex / 3) &&
             cell !== 0 &&
             cell === board[selectedCell.row][selectedCell.col];
-
+  
           const isSelectedCell =
             selectedCell &&
             (selectedCell.row === rowIndex ||
@@ -554,7 +581,7 @@ const SudokuGame = ({route}) => {
             (board[rowIndex][colIndex] ===
               board[selectedCell.row][selectedCell.col] ||
               (rowIndex === selectedCell.row && colIndex === selectedCell.col));
-
+  
           // Check if the current cell has the same value as the selected cell
           const isSameValueAsSelected =
             selectedCell &&
@@ -579,12 +606,12 @@ const SudokuGame = ({route}) => {
                       ? dark2_bg_color
                       : 'default',
                 },
-                {width: cellWidth},
-                rowIndex % 3 === 0 && {borderTopWidth: 3},
-                colIndex % 3 === 0 && {borderLeftWidth: 3},
-                rowIndex === 8 && {borderBottomWidth: 3},
-                colIndex === 8 && {borderRightWidth: 3},
-                {borderColor: 'black'},
+                { width: cellWidth },
+                rowIndex % 3 === 0 && { borderTopWidth: 3 },
+                colIndex % 3 === 0 && { borderLeftWidth: 3 },
+                rowIndex === 8 && { borderBottomWidth: 3 },
+                colIndex === 8 && { borderRightWidth: 3 },
+                { borderColor: 'black' },
                 cell === 0 && styles.emptyCell,
                 isSelectedCell && {
                   backgroundColor:
@@ -609,12 +636,9 @@ const SudokuGame = ({route}) => {
                         ? selected_rows_color
                         : '#dCFAFF',
                   },
-                isSameValueAsSelected &&
-                  isSelectedCell && {backgroundColor: '#FFCDD2'},
-                isMatchingCell &&
-                  !isSelectedCell && {backgroundColor: '#98fb98'},
-                isMatchingCell && isSelectedCell && {backgroundColor: 'pink'}, // Change the color for matching row
-                isMatchingCell && isSelectedCell && {backgroundColor: 'pink'}, // Change the color for matching column
+                isSameValueAsSelected && isSelectedCell && { backgroundColor: '#FFCDD2' },
+                isMatchingCell && !isSelectedCell && { backgroundColor: '#98fb98' },
+                isMatchingCell && isSelectedCell && { backgroundColor: 'pink' },
                 cellStyle,
                 selectedCell &&
                   selectedCell.row === rowIndex &&
@@ -628,40 +652,34 @@ const SudokuGame = ({route}) => {
               onPress={() => handleCellPress(rowIndex, colIndex)}>
               {cell !== 0 && <Text style={[, cellStyle]}>{cell}</Text>}
               {cell === 0 && (
-              <>
-                {/* <Text style={styles.cellText}></Text> */}
-                {/* Display notes */}
-                <View style={styles.noteContainer}>
-                  <View style={[styles.noteLine1, styles.noteContainer]}>
-                    {notes[rowIndex][colIndex].slice(0, 3).map((note) => (
-                      <Text key={note} style={styles.noteText}>
-                        {note}
-                      </Text>
+                <>
+                  <View style={styles.noteGrid}>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((note) => (
+                      <View key={note} style={styles.noteCell}>
+                        <Text
+                          style={[
+                            styles.noteText,
+                            {
+                              color: isNoteMatching(note, rowIndex, colIndex)
+                                ? 'red'
+                                : 'blue',
+                            },
+                          ]}
+                        >
+                          {notes[rowIndex][colIndex].includes(note) ? note : ' '}
+                        </Text>
+                      </View>
                     ))}
                   </View>
-                  <View style={[styles.noteLine2, styles.noteContainer]}>
-                    {notes[rowIndex][colIndex].slice(3, 6).map((note) => (
-                      <Text key={note} style={styles.noteText}>
-                        {note}
-                      </Text>
-                    ))}
-                  </View>
-                  <View style={[styles.noteLine3, styles.noteContainer]}>
-                    {notes[rowIndex][colIndex].slice(6, 9).map((note) => (
-                      <Text key={note} style={styles.noteText}>
-                        {note}
-                      </Text>
-                    ))}
-                  </View>
-                </View>
-              </>
-            )}
+                </>
+              )}
             </TouchableOpacity>
           );
         })}
       </View>
     ));
   };
+  
 
   const handlePausePress = () => {
     setIsTimerRunning(!isTimerRunning);
@@ -903,33 +921,7 @@ const SudokuGame = ({route}) => {
           // marginVertical: 30,
         }}
       />
-      {/* <View style={styles.settingContainer}>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text onPress={handleBackPress}>
-            <Ionicons
-              name={'arrow-back'}
-              size={40}
-              color={mode ? 'grey' : '#25D366'}
-            />
-          </Text>
-        </View>
-        <Text onPress={handlePausePress}>
-          <Ionicons
-            name={isTimerRunning ? 'pause-circle' : 'play-circle'}
-            size={40}
-            color="green"
-          />
-        </Text>
-        <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Text onPress={togglemode}>
-            <Ionicons
-              name={mode ? 'sunny-sharp' : 'sunny-sharp'}
-              size={35}
-              color={mode ? 'lightgrey' : 'grey'}
-            />
-          </Text>
-        </View>
-      </View> */}
+      
       <SettingContainer
         mode={mode}
         isTimerRunning={isTimerRunning}
@@ -987,17 +979,7 @@ const SudokuGame = ({route}) => {
           <View style={styles.mainSudokuGrid}>{renderBoard()}</View>
         </>
       ) : (
-        <View
-          style={{
-            justifyContent: 'center',
-            alignItems: 'center',
-            minHeight: 360,
-          }}
-          size="large">
-          <Text style={{fontWeight: 'bold', fontSize: 30, color: '#2a5934'}}>
-            Loading . . .{' '}
-          </Text>
-        </View>
+       <FacebookContent/>
       )}
       <View style={styles.settingContainer}>
         <View
@@ -1020,9 +1002,45 @@ const SudokuGame = ({route}) => {
         <View style={{justifyContent: 'center', color: 'green'}}>
           <Text>{name}</Text>
         </View>
+       <View style={{flexDirection:'row'}}>
+       <TouchableOpacity onPress={handlePen}>
+          <View style={{flexDirection: 'column', alignItems: 'center'}}>
+            
+            <View style={{position: 'relative', marginRight:15}}>
+              
+              <Ionicons
+                name="create"
+                size={30}
+                color={penOn ? 'tomato' : 'grey'}
+              />
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: '50%',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Text
+                  style={{
+                    fontSize: 12,
+                    color: 'white',
+                    fontWeight: 'bold',
+                  }}>
+                  {hints}
+                </Text>
+              </View>
+            </View>
+            <Text style={{fontSize: 10, color: penOn?  'tomato': 'grey', fontWeight: 'bold', marginRight: 17}}>{penOn ? 'On' : 'Off'}</Text>
+          </View>
+        </TouchableOpacity>
         <TouchableOpacity onPress={handlePressHints}>
           <View style={{flexDirection: 'column', alignItems: 'center'}}>
+            
             <View style={{position: 'relative'}}>
+              
               <Ionicons
                 name="bulb"
                 size={30}
@@ -1053,6 +1071,7 @@ const SudokuGame = ({route}) => {
             </Text>
           </View>
         </TouchableOpacity>
+       </View>
       </View>
       <View style={styles.numbers}>
         {[1, 2, 3, 4, 5].map(number => (
@@ -1074,7 +1093,7 @@ const SudokuGame = ({route}) => {
                     : 'default',
               },
             ]}
-            onPress={() => handleNotePress(number)}>
+            onPress={() => penOn ? handleNotePress(number) : handleNumberPress(number)}>
             <Text
               style={[
                 styles.text2,
@@ -1117,7 +1136,7 @@ const SudokuGame = ({route}) => {
                     : 'default',
               },
             ]}
-            onPress={() => handleNumberPress(number)}>
+            onPress={() => penOn ? handleNotePress(number) : handleNumberPress(number)}>
             <Text
               style={[
                 styles.text2,

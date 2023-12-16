@@ -16,25 +16,29 @@ export const styles = StyleSheet.create({
       minHeight: 360,
 
     },
-    // noteContainer: {
-    //   flexDirection: 'row',
-    // },
+    noteGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      // marginTop: 5,
+      // borderWidth: 1, // Border for the note grid
+    },
+  
+    noteCell: {
+      width: '33%', // Divide the grid into 3 columns
+      // height: 40, // Adjust the height as needed
+      justifyContent: 'center',
+      alignItems: 'center',
+      // borderRightWidth: 1, // Border between cells
+      // borderBottomWidth: 1, // Border between cells
+    },
   
     noteText: {
       // Style for individual note text
       fontSize: 12,
+      fontWeight:'bold',
+      lineHeight:12
       // Add any other styles you need
-    },
-  
-    // Styles for positioning notes in the grid
-    noteLine1: {
-      justifyContent: 'flex-start', flexDirection:"row" // Align notes to the start of the container (left)
-    },
-    noteLine2: {
-      justifyContent: 'center', flexDirection:"row"// Align notes to the center of the container
-    },
-    noteLine3: {
-      justifyContent: 'flex-end',flexDirection:"row" // Align notes to the end of the container (right)
     },
     row: {
       flexDirection: 'row',

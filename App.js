@@ -265,7 +265,9 @@ function App() {
               name="Statistics"
               component={StatisticsScreen}
              options={{
-                headerShown: false,
+                headerShown: true,
+                headerTitleAlign: 'center', // Center the header title
+
                 tabBarStyle: {
                   backgroundColor:
                     mode === 'light'
