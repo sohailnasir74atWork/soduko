@@ -1,13 +1,13 @@
 // Light Theme 1
 export const light_button_color = "#4A154B";
-export const light_bg_color = "#FFFFFF";
+export const light_bg_color = "#f0f0f0";
 export const light_text_color = "#808080"; // Grey
 
 
 // Light Theme 2
 export const light2_button_color = "#3498db";
-export const light2_bg_color = "#E1FFD6";
-export const light2_text_color = "#333333";
+export const light2_bg_color = "#FBF0D9";
+export const light2_text_color = "#5F4B32";
 
 
 // Dark Theme 1
@@ -34,5 +34,7 @@ export const STORAGE_KEY = '@SudokuGameState';
 export const STORAGE_KEY_STATS = '@SudokuGameStateGlobel';
 export const STORAGE_KEY_Battels = '@SudokuGameStateBattels';
 export const STORAGE_KEY_First_Play = '@SudokuGameStateFirstPlay';
+export const STORAGE_KEY_Battels_Uncompleted = '@SudokuGameStateBattelsUncompleted';
+
 
 

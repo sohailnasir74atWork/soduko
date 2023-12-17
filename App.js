@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useContext, useRef} from 'react';
 import {StatusBar} from 'react-native';
-import {NavigationContainer} from '@react-navigation/native';
+import {NavigationContainer, getFocusedRouteNameFromRoute} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from './src/components/SplashScreen';
 import SudokuGame from './src/components/SudokuGame';
@@ -23,6 +23,8 @@ import StatisticsScreen from './src/components/Statistics';
 import Battels from './src/components/Battels';
 import Guide from './src/components/tutorial';
 import TabViewExample from './src/components/globleState/text';
+import MoreScreen from './src/components/moreScreen';
+import MyTabs from './src/components/testing';
 
 const Stack = createNativeStackNavigator();
 const screenOptions = {
@@ -168,9 +170,9 @@ function App() {
     setLoading(false);
   }, 2000);
   return (
+    <NavigationContainer>
     <MenuProvider>
-      <NavigationContainer>
-        <StatusBar
+              <StatusBar
           barStyle={
             mode === 'light' || mode === 'light2'
               ? 'dark-content'
@@ -178,7 +180,7 @@ function App() {
           }
           backgroundColor={
             mode === 'light'
-              ? light_bg_color
+              ? 'white'
               : mode === 'light2'
               ? light2_bg_color
               : mode === 'dark'
@@ -220,21 +222,29 @@ function App() {
             <Tab.Screen
               name="Home"
               component={HomeStackScreen}
-              options={{
+              options={({ route }) => ({
                 headerShown: false,
-                tabBarStyle: {
-                  backgroundColor:
+                tabBarStyle: ((route) => {
+              const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+                  console.log(routeName)
+                  if (routeName === 'game') {
+                    return { display: "none" }
+                  }
+                  
+                  return {backgroundColor:
                     mode === 'light'
-                      ? light_bg_color
+                      ? 'white'
                       : mode === 'light2'
                       ? light2_bg_color
                       : mode === 'dark'
                       ? dark_bg_color
                       : mode === 'dark2'
                       ? dark2_bg_color
-                      : 'default',
-                },
-              }}
+                      : 'default'}
+                  
+                })(route),
+                
+              })}
               initialParams={{gameStats, setGameStats}}
             />
 
@@ -242,21 +252,29 @@ function App() {
             <Tab.Screen
               name="Battels"
               component={BattelsStackScreen}
-              options={{
+              options={({ route }) => ({
                 headerShown: false,
-                tabBarStyle: {
-                  backgroundColor:
+                tabBarStyle: ((route) => {
+              const routeName = getFocusedRouteNameFromRoute(route) ?? ""
+                  console.log(routeName)
+                  if (routeName === 'game') {
+                    return { display: "none" }
+                  }
+                  
+                  return {backgroundColor:
                     mode === 'light'
-                      ? light_bg_color
+                      ? 'white'
                       : mode === 'light2'
                       ? light2_bg_color
                       : mode === 'dark'
                       ? dark_bg_color
                       : mode === 'dark2'
                       ? dark2_bg_color
-                      : 'default',
-                },
-              }}
+                      : 'default'}
+                  
+                })(route),
+                
+              })}
               initialParams={{gameStats, setGameStats}}
 
 
@@ -265,13 +283,13 @@ function App() {
               name="Statistics"
               component={StatisticsScreen}
              options={{
-                headerShown: true,
+                headerShown: false,
                 headerTitleAlign: 'center', // Center the header title
 
                 tabBarStyle: {
                   backgroundColor:
                     mode === 'light'
-                      ? light_bg_color
+                      ? 'white'
                       : mode === 'light2'
                       ? light2_bg_color
                       : mode === 'dark'
@@ -285,13 +303,13 @@ function App() {
             />
             <Tab.Screen
               name="More"
-              component={TabViewExample}
+              component={MoreScreen}
              options={{
                 headerShown: false,
                 tabBarStyle: {
                   backgroundColor:
                     mode === 'light'
-                      ? light_bg_color
+                      ? 'white'
                       : mode === 'light2'
                       ? light2_bg_color
                       : mode === 'dark'
@@ -304,8 +322,9 @@ function App() {
             />
           </Tab.Navigator>
         )}
-      </NavigationContainer>
+      
     </MenuProvider>
+    </NavigationContainer>
   );
 }
 

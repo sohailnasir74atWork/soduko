@@ -31,7 +31,6 @@ const Battels = ({navigation}) => {
   const handleCellPress = (cellIndex, levelName) => {
     navigation.navigate('game', {
       level: CONSTANT.LEVEL[CONSTANT.LEVEL_NAME.indexOf(levelName)],
-      reset: true,
       battels: true,
       index: cellIndex,
     });
@@ -57,44 +56,6 @@ const Battels = ({navigation}) => {
   // Generate 40 cells
   const cells = Array.from({length: 100}, (_, index) => index + 1);
 
-  //   useEffect(() => {
-  //     const loadGameState = async () => {
-  //       try {
-  //         // Get the current game state from local storage
-  //         const storedGameState = await AsyncStorage.getItem(STORAGE_KEY_Battels);
-  //         console.log('first', storedGameState);
-  //         if (storedGameState) {
-  //           const parsedGameState = JSON.parse(storedGameState);
-  //           setActiveCell(parsedGameState.activeCell);
-  //         }
-  //       } catch (error) {
-  //         console.error('Error loading game state from storage:', error);
-  //       }
-  //     };
-
-  //     loadGameState();
-  //   }, []);
-
-  //   useEffect(() => {
-  //     // Save the updated game stats back to local storage
-  //     const saveGameState = async () => {
-  //       try {
-  //         const gameState = {
-  //           activeCell,
-  //         };
-
-  //         await AsyncStorage.setItem(
-  //           STORAGE_KEY_Battels,
-  //           JSON.stringify(gameState),
-  //         );
-  //       } catch (error) {
-  //         console.error('Error saving game state to storage:', error);
-  //       }
-  //     };
-
-  //     saveGameState();
-  //   }, [activeCell]); // Run the effect whenever gameStats changes
-
   const renderItem = ({item}) => {
     const levelName = getLevelName(item);
     let levelStyle = styles.value; // Default style
@@ -115,6 +76,15 @@ const Battels = ({navigation}) => {
         disabled={isCellDisabled(item)}
         style={[
           styles.row,
+          {backgroundColor: mode === 'light'
+          ? 'white'
+          : mode === 'light2'
+          ? light2_bg_color
+          : mode === 'dark'
+          ? dark_bg_color
+          : mode === 'dark2'
+          ? dark2_bg_color
+          : 'default'},
           item > activeCell
             ? styles.disabled
             : item === activeCell
@@ -124,12 +94,12 @@ const Battels = ({navigation}) => {
             : null,
         ]}
         onPress={() => handleCellPress(item, levelName)}>
-        <Text style={styles.value}>{item}</Text>
-        <Text style={levelStyle}>{levelName}</Text>
+        <Text style={item === activeCell ? styles.processText :(item <= activeCell ? styles.active : levelStyle)}>{item}</Text>
+        <Text style={item === activeCell ? styles.processText :(item <= activeCell ? styles.active : levelStyle)}>{levelName}</Text>
 
         <Text style={styles.duration}>
           {item > activeCell ? (
-            <Ionicons name={'lock-closed'} size={20} color={'white'} />
+            <Ionicons name={'lock-closed'} size={20} color={'grey'} />
           ) : item === activeCell ? (
             <Ionicons name={'play-circle'} size={20} color={'white'} />
           ) : item <= activeCell ? (
@@ -149,7 +119,7 @@ const Battels = ({navigation}) => {
         {
           backgroundColor:
             mode === 'light'
-              ? light_bg_color
+              ? null
               : mode === 'light2'
               ? light2_bg_color
               : mode === 'dark'
@@ -211,24 +181,52 @@ const styles = StyleSheet.create({
     minHeight: 50,
     padding: 5,
     margin: 5,
-    backgroundColor: 'white',
+    // backgroundColor: 'red',
     borderRadius: 7,
+    shadowColor: '#000000',
+      shadowOffset: {
+        width: 0,
+        height: 4,
+      },
+      shadowOpacity: 0.19,
+      shadowRadius: 5.62,
+      elevation: 2,
   },
   value: {
     fontSize: 12,
-    color: 'white',
+    color: 'red',
     fontWeight: 'bold',
   },
   active: {
     backgroundColor: 'green',
     color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+
+
   },
   disabled: {
-    backgroundColor: '#CFB08D',
+    // backgroundColor: '#CFB08D',
     // opacity: 0.5,
+    color: 'black',
+    fontWeight: 'bold',
+    borderColor:'white',
+    borderWidth:1
+
   },
   process: {
     backgroundColor: '#4a154b',
+    
+
+
+  },
+  processText: {
+   
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 12,
+
+
   },
   levelName: {
     fontSize: 12,
@@ -244,12 +242,12 @@ const styles = StyleSheet.create({
   },
   easy: {
     fontSize: 12,
-    color: 'white',
+    color: 'grey',
     fontWeight: 'bold',
   },
   medium: {
     fontSize: 12,
-    color: '#0046bf',
+    color: '#C0C0C0',
     fontWeight: 'bold',
   },
   hard: {

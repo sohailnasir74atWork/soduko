@@ -68,7 +68,8 @@ export const styles = StyleSheet.create({
       flexDirection: 'row',
       justifyContent: 'space-between',
       width: '97%',
-      marginVertical: 10,
+      marginVertical: 5,
+      marginBottom:2
     },
     timerContent: {
       flexDirection: 'row',
@@ -78,7 +79,7 @@ export const styles = StyleSheet.create({
       fontSize: 16,
       fontWeight: 'bold',
       flexDirection: 'row',
-      justifyContent: 'center',
+      justifyContent: 'flex-end',
       alignItems: 'center',
   
       // marginLeft: 8, // Adjust the margin as needed
@@ -123,6 +124,8 @@ export const styles = StyleSheet.create({
       color: '#000',
       alignItems: 'center',
       justifyContent: 'center',
+      borderColor:'#FAF9F6',
+      borderWidth:.5,
       fontSize: 14,
       cursor: 'pointer',
       marginVertical: 5,
@@ -130,12 +133,12 @@ export const styles = StyleSheet.create({
       marginHorizontal: 5,
       shadowColor: '#000000',
       shadowOffset: {
-        width: 0,
+        width: 4,
         height: 4,
       },
-      shadowOpacity: 0.19,
-      shadowRadius: 5.62,
-      elevation: 2,
+      shadowOpacity: 0.1,
+      shadowRadius: 4,
+      elevation: 3,
     },
   
     text: {

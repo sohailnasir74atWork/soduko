@@ -714,17 +714,18 @@ const Guide = ({navigation}) => {
   
 </View>
 <View>
-{guide3 && <TouchableOpacity
-    onPress={handleContinue2}
+ <TouchableOpacity
+    onPress={guide3 ? handleContinue2 : (disable ? handelClose : null)}
     style={{
       paddingHorizontal: 10,
       paddingVertical: 5,
-      backgroundColor: 'blue',
+      backgroundColor: 'green',
       borderRadius: 5,
       marginRight: 10,
     }}>
-    <Text style={{ color: 'white', fontWeight: 'bold' }}>Next</Text>
-  </TouchableOpacity>}
+   {guide3 && <Text style={{ color: 'white', fontWeight: 'bold' }}>Next</Text>}
+   {disable && <Text style={{ color: 'white', fontWeight: 'bold' }}>Finish</Text>}
+  </TouchableOpacity>
   </View>
 </View>
 

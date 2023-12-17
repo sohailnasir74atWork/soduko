@@ -20,7 +20,7 @@ import {
 import SettingContainer from './helper/SettingContainer';
 
 const SelectLevels = ({navigation}) => {
-  const {toggleTheme, mode, shouldRedirect, globelLevel, redirect, setreDirect} = useContext(AppContext);
+  const {toggleTheme, mode, shouldRedirect, globelLevel, redirect, setreDirect, setShouldRedirect} = useContext(AppContext);
   const [guide, setGuide] = useState()
   useEffect(() => {
     // Save the updated game stats back to local storage
@@ -41,7 +41,6 @@ const SelectLevels = ({navigation}) => {
   
     saveGameState();
   }, [guide]); // Run the effect whenever gameStats changes
-  useEffect(()=>{},[shouldRedirect])
   console.log('saved_state',redirect)
   const animations = [0, 1, 2, 3].map(() => new Animated.Value(0)); // Adjusted to 6 rows
   const CONSTANT = {
@@ -79,7 +78,6 @@ const navigateToGuide = ()=>{
       level: CONSTANT.LEVEL[CONSTANT.LEVEL_NAME.indexOf(level)],
       reset: true,
     });
-    // if(loaded){showInterstitialAd()}
   };
   
   return (
@@ -89,7 +87,7 @@ const navigateToGuide = ()=>{
         {
           backgroundColor:
             mode === 'light'
-              ? light_bg_color
+              ? 'white'
               : mode === 'light2'
               ? light2_bg_color
               : mode === 'dark'
@@ -108,7 +106,7 @@ const navigateToGuide = ()=>{
           textAlign: 'center',
           fontWeight: 'bold',
         }}
-        message={`Did you play Sudodu before ?`}
+        message={`Have you played Sudoku before ?`}
         closeOnTouchOutside={false}
         closeOnHardwareBackPress={false}
         showCancelButton={true}

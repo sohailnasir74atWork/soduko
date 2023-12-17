@@ -67,7 +67,7 @@ const ContinueScreen = ({navigation, route}) => {
         <View>
           <Text style={[styles.title, {color: mode === 'light'
                 ? light_text_color
-                : mode === 'light1'
+                : mode === 'light2'
                 ? light2_text_color
                 : mode === 'dark'
                 ? dark_text_color

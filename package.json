@@ -12,7 +12,6 @@
   "dependencies": {
     "@react-native-async-storage/async-storage": "^1.19.8",
     "@react-native-community/slider": "^4.4.4",
-    "@react-native-community/viewpager": "^5.0.11",
     "@react-navigation/bottom-tabs": "^6.5.11",
     "@react-navigation/material-top-tabs": "^6.6.5",
     "@react-navigation/native": "^6.1.9",
@@ -24,6 +23,7 @@
     "react-native-gesture-handler": "^2.14.0",
     "react-native-google-mobile-ads": "^12.3.0",
     "react-native-linear-gradient": "^2.8.3",
+    "react-native-pager-view": "^6.2.3",
     "react-native-popover-view": "^5.1.8",
     "react-native-popup-menu": "^0.16.1",
     "react-native-reanimated": "^3.6.1",
