@@ -161,7 +161,7 @@ export const styles = StyleSheet.create({
       fontSize: 25,
     },
     correct: {
-      color: '#25D366',
+      color: 'green',
       fontSize: 25,
     },
     spacer: {

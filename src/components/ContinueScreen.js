@@ -1,7 +1,6 @@
 import React, {useContext} from 'react';
 import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import GridWithAnimation from '../grid';
 import AppContext from './globleState/AppContext';
 import SettingContainer from './helper/SettingContainer';

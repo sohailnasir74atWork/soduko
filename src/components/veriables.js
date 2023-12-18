@@ -24,8 +24,8 @@ export const dark2_text_color = "white";
 
 // cell color
 
-export const selected_rows_color = "#c3c3c3" 
-export const selected_cell_color = "#b4b4b4" 
+export const selected_rows_color = "#4d5d53" 
+export const selected_cell_color = "#C0C0C0" 
 export const selected_match_color = "#939393" 
 
 

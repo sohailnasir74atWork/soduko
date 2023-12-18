@@ -22,9 +22,7 @@ import AppContext from './src/components/globleState/AppContext';
 import StatisticsScreen from './src/components/Statistics';
 import Battels from './src/components/Battels';
 import Guide from './src/components/tutorial';
-import TabViewExample from './src/components/globleState/text';
 import MoreScreen from './src/components/moreScreen';
-import MyTabs from './src/components/testing';
 
 const Stack = createNativeStackNavigator();
 const screenOptions = {

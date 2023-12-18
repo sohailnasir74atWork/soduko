@@ -79,7 +79,7 @@ const Battels = ({navigation}) => {
           {backgroundColor: mode === 'light'
           ? 'white'
           : mode === 'light2'
-          ? light2_bg_color
+          ? 'white'
           : mode === 'dark'
           ? dark_bg_color
           : mode === 'dark2'

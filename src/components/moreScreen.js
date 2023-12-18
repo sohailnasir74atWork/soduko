@@ -33,7 +33,7 @@ function MoreScreen({ route, navigation }) {
   const privacyLink =
     'https://www.freeprivacypolicy.com/live/12fb9e08-7f44-432b-aca1-19bd27910324';
   const storeLink =
-    'https://play.google.com/store/apps/details?id=com.whatgroupbyfarhat';
+    'https://play.google.com/store/apps/details?id=com.thinktech_sudoku';
   const contactEmail = 'sohailnasir74@gmail.com';
 
   const shareAppLink = async () => {

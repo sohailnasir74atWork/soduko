@@ -65,6 +65,7 @@ const SudokuGame = ({route}) => {
   const [prevSelectedCell, setPrevSelectedCell] = useState(null);
   const [showAlert, setShowAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
+  const [showRestartDialog, setShowRestartDialog] = useState(false);
   const [notes, setNotes] = useState(
     Array.from({length: 9}, () => Array(9).fill([])),
   );
@@ -174,16 +175,26 @@ const SudokuGame = ({route}) => {
           setSavedGameLoaded(true);
         } else {
           // If reset is false, load data from local storage
-          const savedStateHome = await AsyncStorage.getItem(STORAGE_KEY);
-  const savedStateHomeBattels = await AsyncStorage.getItem(STORAGE_KEY_Battels_Uncompleted);
+          const savedState = battels ? await AsyncStorage.getItem(STORAGE_KEY_Battels_Uncompleted) : await AsyncStorage.getItem(STORAGE_KEY);
 
-  if (!battels && savedStateHome) {
-    const parsedState = JSON.parse(savedStateHome);
-    applyParsedState(parsedState);
-  } else if (battels && savedStateHomeBattels) {
-    const parsedState = JSON.parse(savedStateHomeBattels);
-    applyParsedState(parsedState);
-  } else {
+          if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            setBoard(parsedState.board);
+            setTimer(parsedState.timer);
+            setSolved(parsedState.solved);
+            setIsGameWon(parsedState.isGameWon);
+            setSelectedCell(parsedState.selectedCell);
+            setIsTimerRunning(parsedState.isTimerRunning);
+            setTimer(parsedState.timer);
+            timerRef.current = parsedState.timer; // Set the timer reference
+            setErrors(parsedState.errors);
+            setMoves(parsedState.moves);
+            setPrevSelectedCell(parsedState.prevSelectedCell);
+            setShowAlert(parsedState.showAlert);
+            setValidity(parsedState.validity);
+            setCellStyles(parsedState.cellStyles);
+            setSavedGameLoaded(true);
+          } else {
             // If no saved game found, generate a new Sudoku puzzle
             const {original, question} = sudokuGen(level);
             setBoard(question);
@@ -199,22 +210,7 @@ const SudokuGame = ({route}) => {
 
     loadGameState();
   }, [level]);
-  function applyParsedState(parsedState) {
-    setBoard(parsedState.board);
-    setTimer(parsedState.timer);
-    setSolved(parsedState.solved);
-    setIsGameWon(parsedState.isGameWon);
-    setSelectedCell(parsedState.selectedCell);
-    setIsTimerRunning(parsedState.isTimerRunning);
-    timerRef.current = parsedState.timer; // Set the timer reference
-    setErrors(parsedState.errors);
-    setMoves(parsedState.moves);
-    setPrevSelectedCell(parsedState.prevSelectedCell);
-    setShowAlert(parsedState.showAlert);
-    setValidity(parsedState.validity);
-    setCellStyles(parsedState.cellStyles);
-    setSavedGameLoaded(true);
-  }
+
   useEffect(() => {
     const saveGameState = async () => {
       try {
@@ -242,7 +238,7 @@ const SudokuGame = ({route}) => {
       }
     };
 
-    if (savedGameLoaded) {
+    if (savedGameLoaded && !battels) {
       saveGameState();
     }
   }, [
@@ -262,7 +258,7 @@ const SudokuGame = ({route}) => {
     level,
   ]);
   useEffect(() => {
-   if(battels){ const saveGameState = async () => {
+    const saveGameState = async () => {
       try {
         const gameState = isGameWon
           ? null
@@ -286,11 +282,11 @@ const SudokuGame = ({route}) => {
       } catch (error) {
         console.error('Error saving game state to storage:', error);
       }
-    }
+    };
 
-    if (savedGameLoaded) {
+    if (savedGameLoaded && battels) {
       saveGameState();
-    };}
+    }
   }, [
     board,
     timer,
@@ -307,6 +303,7 @@ const SudokuGame = ({route}) => {
     savedGameLoaded,
     level,
   ]);
+
   const updatedPlayedGames = useMemo(() => {
     // Your logic for updating playedGames
     return gameStats && level ? gameStats[level].playedGames + 1 : 0;
@@ -367,7 +364,7 @@ const SudokuGame = ({route}) => {
         setTimer(prevTimer => prevTimer + 1); // Update the state to trigger a re-render
 
         // Check if it's time to show the ad (every 20 seconds)
-        // if (timerRef.current % 10 === 0) {
+        // if (timerRef.current % 9 === 0) {
         //   // Call a function to show the ad
         //   if(loaded) showInterstitialAd()
 
@@ -396,6 +393,7 @@ const SudokuGame = ({route}) => {
     return true;
   };
 const handleRefresh = ()=>{
+  setShowRestartDialog(false)
   const {original, question} = sudokuGen(level);
           setBoard(question);
           initialPuzzleRef.current = question;
@@ -713,7 +711,7 @@ const handleRefresh = ()=>{
                 isSameValueAsSelected &&
                   isSelectedCell && {backgroundColor: '#FFCDD2'},
                 isMatchingCell &&
-                  !isSelectedCell && {backgroundColor: '#98fb98'},
+                  !isSelectedCell && {backgroundColor: mode === 'dark' || mode === 'dark2' ? "#005366" :'#98fb98'},
                 isMatchingCell && isSelectedCell && {backgroundColor: 'pink'},
                 cellStyle,
                 selectedCell &&
@@ -721,7 +719,7 @@ const handleRefresh = ()=>{
                   selectedCell.col === colIndex && {
                     backgroundColor:
                       mode === 'dark' || mode === 'dark2'
-                        ? dark_bg_color
+                        ? selected_cell_color
                         : '#AEDFF7',
                   },
               ]}
@@ -789,7 +787,6 @@ const handleRefresh = ()=>{
   const screenWidth = Dimensions.get('window').width;
   const cellWidth = screenWidth / 9 - 1;
   const handlePressHints = () => {
-    // if(checkGameWin()) return
     if (hints > 0) {
       const emptyCells = findEmptyCells();
 
@@ -994,7 +991,48 @@ const handleRefresh = ()=>{
           // marginVertical: 30,
         }}
       />
-
+ <AwesomeAlert
+        show={showRestartDialog}
+        showProgress={false}
+        title="Want to Restat Game ?"
+        titleStyle={{
+          fontSize: 20,
+          textAlign: 'center',
+          fontWeight: 'bold',
+        }}
+        message={''}
+        closeOnTouchOutside={false}
+        closeOnHardwareBackPress={false}
+        showCancelButton={true}
+        showConfirmButton={true}
+        confirmText="Yes"
+        cancelText='No'
+        confirmButtonColor="#DD6B55"
+        onCancelPressed={()=>{setShowRestartDialog(false)}}
+        confirmButtonTextStyle={{
+          fontSize: 18,
+          fontWeight: 'bold',
+          borderRadius: 10,
+        }}
+        onConfirmPressed={() => {
+          handleRefresh()
+        }}
+        overlayStyle={{
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        }}
+        contentContainerStyle={
+          {
+            // width: 300,
+            // height: 250,
+          }
+        }
+        messageStyle={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          // paddingVertical: 10,
+          // marginVertical: 30,
+        }}
+      />
       <SettingContainer
         mode={mode}
         isTimerRunning={isTimerRunning}
@@ -1067,9 +1105,9 @@ const handleRefresh = ()=>{
               color={mode ? '#25D366' : '#128C7E'}
             />
           </Text>
-          {/* <Text style={{fontSize: 10, color: '#128C7E', fontWeight: 'bold'}}>
+          <Text style={{fontSize: 9, color: '#128C7E', fontWeight: 'bold'}}>
             Sound
-          </Text> */}
+          </Text>
         </View>
         <View
           style={{
@@ -1078,16 +1116,16 @@ const handleRefresh = ()=>{
             justifyContent: 'center',
             marginLeft: 15
           }}>
-          <Text onPress={handleRefresh}>
+         {battels &&  <Text onPress={()=>{setShowRestartDialog(true)}}>
             <Ionicons
               name={'refresh-circle'}
               size={30}
               color={'tomato'}
             />
-          </Text>
-          {/* <Text style={{fontSize: 10, color: 'red', fontWeight: 'bold'}}>
+          </Text>}
+         { battels && <Text style={{fontSize: 9, color: 'red', fontWeight: 'bold'}}>
             Restart
-          </Text> */}
+          </Text>}
         </View>
         </View>
         <View style={{justifyContent: 'center', color: 'black'}}>
@@ -1097,8 +1135,8 @@ const handleRefresh = ()=>{
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
               <View style={{position: 'relative', marginRight: 15}}>
                 <Ionicons
-                  name="create"
-                  size={30}
+                  name="pencil"
+                  size={29}
                   color={penOn ? 'tomato' : 'grey'}
                 />
                 <View
@@ -1114,15 +1152,15 @@ const handleRefresh = ()=>{
                  
                 </View>
               </View>
-              {/* <Text
+              <Text
                 style={{
-                  fontSize: 10,
+                  fontSize: 9,
                   color: penOn ? 'tomato' : 'grey',
                   fontWeight: 'bold',
                   marginRight: 17,
                 }}>
-                {penOn ? 'On' : 'Off'}
-              </Text> */}
+                {penOn ? 'Notes' : 'Notes'}
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity onPress={handlePressHints}>
@@ -1153,9 +1191,9 @@ const handleRefresh = ()=>{
                   </Text>
                 </View>
               </View>
-              {/* <Text style={{fontSize: 10, color: 'tomato', fontWeight: 'bold'}}>
+              <Text style={{fontSize: 9, color: 'tomato', fontWeight: 'bold'}}>
                 Hints
-              </Text> */}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -1289,7 +1327,7 @@ const handleRefresh = ()=>{
           </Text>
           <Text
             style={{
-              fontSize: 10,
+              fontSize: 9,
               fontWeight: 'bold',
               color:
                 mode === 'light'
