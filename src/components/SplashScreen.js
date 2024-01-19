@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Image, StyleSheet} from 'react-native';
 
 const SplashScreen = () => {
-   return (
+  return (
     <View style={styles.container}>
       {/* Your image from assets */}
       <Image source={require('../../assets/logo.png')} style={styles.logo} />
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     width: 200, // Adjust width as needed
     height: 200, // Adjust height as needed
     borderRadius: 20, // Set border radius to 20px
-  }, 
+  },
 });
 
 export default SplashScreen;

@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AwesomeAlert from 'react-native-awesome-alerts';
 import {useNavigation} from '@react-navigation/native';
-import { sudokuGen} from './generateGame';
+import {sudokuGen} from './generateGame';
 import Sound from 'react-native-sound';
 import AppContext from './globleState/AppContext';
 import {styles} from './styles';
@@ -40,8 +40,7 @@ Sound.setCategory('Playback');
 const SudokuGame = ({route}) => {
   const navigation = useNavigation();
 
-  const {level, reset, gameStats, setGameStats, battels} =
-    route.params;
+  const {level, reset, gameStats, setGameStats, battels} = route.params;
 
   const [clickSound, setClickSound] = useState(null);
   const [name, setName] = useState('');
@@ -66,6 +65,7 @@ const SudokuGame = ({route}) => {
   const [showAlert, setShowAlert] = useState(false);
   const [showErrorAlert, setShowErrorAlert] = useState(false);
   const [showRestartDialog, setShowRestartDialog] = useState(false);
+  const [resetGame, setResetGame] = useState(false);
   const [notes, setNotes] = useState(
     Array.from({length: 9}, () => Array(9).fill([])),
   );
@@ -80,7 +80,7 @@ const SudokuGame = ({route}) => {
     setActiveCell,
     activeCells,
     setActiveCells,
-    setShouldRedirect
+    setShouldRedirect,
   } = useContext(AppContext);
   // console.log('active3', activeCell)
   // console.log('asd'. setActiveCell)
@@ -120,7 +120,8 @@ const SudokuGame = ({route}) => {
     } else if (level === 47) {
       setName('Expert');
     }
-  }, [level]);  useEffect(() => {
+  }, [level]);
+  useEffect(() => {
     const sound = new Sound('wrong.mp3', Sound.MAIN_BUNDLE, error => {
       if (error) {
         console.error('Failed to load the sound2', error);
@@ -175,7 +176,9 @@ const SudokuGame = ({route}) => {
           setSavedGameLoaded(true);
         } else {
           // If reset is false, load data from local storage
-          const savedState = battels ? await AsyncStorage.getItem(STORAGE_KEY_Battels_Uncompleted) : await AsyncStorage.getItem(STORAGE_KEY);
+          const savedState = battels
+            ? await AsyncStorage.getItem(STORAGE_KEY_Battels_Uncompleted)
+            : await AsyncStorage.getItem(STORAGE_KEY);
 
           if (savedState) {
             const parsedState = JSON.parse(savedState);
@@ -210,7 +213,7 @@ const SudokuGame = ({route}) => {
 
     loadGameState();
   }, [level]);
-
+  const iconSizeCu = Dimensions.get('window').height * 0.04;
   useEffect(() => {
     const saveGameState = async () => {
       try {
@@ -278,7 +281,10 @@ const SudokuGame = ({route}) => {
               level,
             };
 
-        await AsyncStorage.setItem(STORAGE_KEY_Battels_Uncompleted, JSON.stringify(gameState));
+        await AsyncStorage.setItem(
+          STORAGE_KEY_Battels_Uncompleted,
+          JSON.stringify(gameState),
+        );
       } catch (error) {
         console.error('Error saving game state to storage:', error);
       }
@@ -302,6 +308,7 @@ const SudokuGame = ({route}) => {
     cellStyles,
     savedGameLoaded,
     level,
+    resetGame,
   ]);
 
   const updatedPlayedGames = useMemo(() => {
@@ -325,8 +332,6 @@ const SudokuGame = ({route}) => {
           updatedGameStats[level].won += 1;
         }
 
-        
-
         return updatedGameStats;
       });
     } else {
@@ -344,7 +349,7 @@ const SudokuGame = ({route}) => {
       ]);
     }
   }, [isTimerRunning, level, playedTime]);
-  
+
   useEffect(() => {
     if (checkGameWin()) {
       setIsGameWon(true);
@@ -392,35 +397,37 @@ const SudokuGame = ({route}) => {
     }
     return true;
   };
-const handleRefresh = ()=>{
-  setShowRestartDialog(false)
-  const {original, question} = sudokuGen(level);
-          setBoard(question);
-          initialPuzzleRef.current = question;
-          setSolved(original);
-          setSavedGameLoaded(true);
-          setSelectedCell(null)
-          setCellStyles(Array.from({length: 9}, () => Array(9).fill(styles.text)))
-          setMoves(0)
-          setErrors(0)
-          timerRef.current = 0
-          }
+  const handleRefresh = () => {
+    setShowRestartDialog(false);
+    setShowErrorAlert(false);
+    const {original, question} = sudokuGen(level);
+    setBoard(question);
+    initialPuzzleRef.current = question;
+    setSolved(original);
+    setSavedGameLoaded(true);
+    setSelectedCell(null);
+    setCellStyles(Array.from({length: 9}, () => Array(9).fill(styles.text)));
+    setMoves(0);
+    setErrors(0);
+    setTimer(0);
+    timerRef.current = 0;
+    console.log('CALLED');
+    setResetGame(!resetGame);
+  };
   const updateCellStyles = (row, col, style) => {
     const newStyles = cellStyles.map(rowStyles => [...rowStyles]);
     newStyles[row][col] = style;
     setCellStyles(newStyles);
   };
-  
+
   const handleBackPress = () => {
     setPlayedTime(timer);
-    // console.log(timer);
     setIsTimerRunning(!isTimerRunning);
-    // setPlayedTime(false)
 
     if (battels) {
+      // Assuming handleRefresh is a synchronous function
       navigation.navigate('battelsScreen');
     } else {
-      // console.log(level);
       navigation.navigate('countinue', {level: level});
     }
   };
@@ -462,7 +469,7 @@ const handleRefresh = ()=>{
       const updatedBoard = [...board];
       const updatedNotes = [...notes];
       updatedNotes[row][col] = Array(9).fill(0);
-    setNotes(updatedNotes);
+      setNotes(updatedNotes);
 
       // Check if the cell is not empty and the value is NOT equal to the solved value
       if (board[row][col] !== 0 && board[row][col] !== solved[row][col]) {
@@ -711,7 +718,12 @@ const handleRefresh = ()=>{
                 isSameValueAsSelected &&
                   isSelectedCell && {backgroundColor: '#FFCDD2'},
                 isMatchingCell &&
-                  !isSelectedCell && {backgroundColor: mode === 'dark' || mode === 'dark2' ? "#005366" :'#98fb98'},
+                  !isSelectedCell && {
+                    backgroundColor:
+                      mode === 'dark' || mode === 'dark2'
+                        ? '#005366'
+                        : '#98fb98',
+                  },
                 isMatchingCell && isSelectedCell && {backgroundColor: 'pink'},
                 cellStyle,
                 selectedCell &&
@@ -929,19 +941,17 @@ const handleRefresh = ()=>{
           fontWeight: 'bold',
           borderRadius: 10,
         }}
-        onCancelPressed={handleBackPress}
+        onCancelPressed={battels ? handleRefresh : handleBackPress}
         onConfirmPressed={() => {
           handleErrorPress();
         }}
         overlayStyle={{
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
         }}
-        contentContainerStyle={
-          {
-            // width: 300,
-            // height: 250,
-          }
-        }
+        contentContainerStyle={{
+          width: 300,
+          // height: 250,
+        }}
         messageStyle={{
           fontSize: 16,
           fontWeight: 'bold',
@@ -991,7 +1001,7 @@ const handleRefresh = ()=>{
           // marginVertical: 30,
         }}
       />
- <AwesomeAlert
+      <AwesomeAlert
         show={showRestartDialog}
         showProgress={false}
         title="Want to Restat Game ?"
@@ -1006,16 +1016,18 @@ const handleRefresh = ()=>{
         showCancelButton={true}
         showConfirmButton={true}
         confirmText="Yes"
-        cancelText='No'
+        cancelText="No"
         confirmButtonColor="#DD6B55"
-        onCancelPressed={()=>{setShowRestartDialog(false)}}
+        onCancelPressed={() => {
+          setShowRestartDialog(false);
+        }}
         confirmButtonTextStyle={{
           fontSize: 18,
           fontWeight: 'bold',
           borderRadius: 10,
         }}
         onConfirmPressed={() => {
-          handleRefresh()
+          handleRefresh();
         }}
         overlayStyle={{
           backgroundColor: 'rgba(0, 0, 0, 0.8)',
@@ -1079,7 +1091,9 @@ const handleRefresh = ()=>{
                       ? dark2_text_color
                       : 'default',
                 },
-              ]}>{formatTime(timerRef.current)}</Text>
+              ]}>
+              {formatTime(timerRef.current)}
+            </Text>
           </View>
         </View>
       </View>
@@ -1091,52 +1105,60 @@ const handleRefresh = ()=>{
         <FacebookContent />
       )}
       <View style={styles.settingContainer}>
-        <View style={{flexDirection:'row'}}>
-        <View
-          style={{
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-          <Text onPress={handleSound}>
-            <Ionicons
-              name={sound ? 'volume-high' : 'volume-mute'}
-              size={30}
-              color={mode ? '#25D366' : '#128C7E'}
-            />
-          </Text>
-          <Text style={{fontSize: 9, color: '#128C7E', fontWeight: 'bold'}}>
-            Sound
-          </Text>
-        </View>
-        <View
-          style={{
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 15
-          }}>
-         {battels &&  <Text onPress={()=>{setShowRestartDialog(true)}}>
-            <Ionicons
-              name={'refresh-circle'}
-              size={30}
-              color={'tomato'}
-            />
-          </Text>}
-         { battels && <Text style={{fontSize: 9, color: 'red', fontWeight: 'bold'}}>
-            Restart
-          </Text>}
-        </View>
+        <View style={{flexDirection: 'row'}}>
+          <View
+            style={{
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}>
+            <Text onPress={handleSound}>
+              <Ionicons
+                name={sound ? 'volume-high' : 'volume-mute'}
+                size={iconSizeCu}
+                color={mode ? '#25D366' : '#128C7E'}
+              />
+            </Text>
+            <Text style={{fontSize: 9, color: '#128C7E', fontWeight: 'bold'}}>
+              Sound
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: 15,
+            }}>
+            {battels && (
+              <Text
+                onPress={() => {
+                  setShowRestartDialog(true);
+                }}>
+                <Ionicons
+                  name={'refresh-circle'}
+                  size={iconSizeCu}
+                  color={'tomato'}
+                />
+              </Text>
+            )}
+            {battels && (
+              <Text style={{fontSize: 9, color: 'red', fontWeight: 'bold'}}>
+                Restart
+              </Text>
+            )}
+          </View>
         </View>
         <View style={{justifyContent: 'center', color: 'black'}}>
-          <Text style={{fontWeight:'bold', color:"lightblue"}}>{name}</Text></View>
+          <Text style={{fontWeight: 'bold', color: 'lightblue'}}>{name}</Text>
+        </View>
         <View style={{flexDirection: 'row'}}>
           <TouchableOpacity onPress={handlePen}>
             <View style={{flexDirection: 'column', alignItems: 'center'}}>
               <View style={{position: 'relative', marginRight: 15}}>
                 <Ionicons
                   name="pencil"
-                  size={29}
+                  size={iconSizeCu}
                   color={penOn ? 'tomato' : 'grey'}
                 />
                 <View
@@ -1148,9 +1170,7 @@ const handleRefresh = ()=>{
                     bottom: '50%',
                     justifyContent: 'center',
                     alignItems: 'center',
-                  }}>
-                 
-                </View>
+                  }}></View>
               </View>
               <Text
                 style={{
@@ -1168,7 +1188,7 @@ const handleRefresh = ()=>{
               <View style={{position: 'relative'}}>
                 <Ionicons
                   name="bulb"
-                  size={30}
+                  size={iconSizeCu}
                   color={hints ? 'tomato' : 'grey'}
                 />
                 <View
@@ -1323,9 +1343,9 @@ const handleRefresh = ()=>{
                 alignItems: 'center',
               },
             ]}>
-            <Ionicons name="backspace" size={20} color="tomato" />
+            <Ionicons name="backspace" size={iconSizeCu} color="tomato" />
           </Text>
-          <Text
+          {/* <Text
             style={{
               fontSize: 9,
               fontWeight: 'bold',
@@ -1342,8 +1362,8 @@ const handleRefresh = ()=>{
               justifyContent: 'center',
               alignItems: 'center',
             }}>
-            Erase
-          </Text>
+            
+          </Text> */}
         </TouchableOpacity>
       </View>
     </View>

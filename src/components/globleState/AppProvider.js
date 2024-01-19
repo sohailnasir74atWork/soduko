@@ -16,9 +16,9 @@ import {
 // Real Ad Unit ID
 // const adUnitId = "ca-app-pub-1340655056171083/4343021379";
 // Test Ad Unit ID
-// const adUnitId = TestIds.INTERSTITIAL;
+const adUnitId = TestIds.INTERSTITIAL;
 
-const adUnitId = '123'; // Placeholder Ad Unit ID for testing
+// const adUnitId = '123'; // Placeholder Ad Unit ID for testing
 
 const createAndLoadInterstitial = () => {
   const interstitial = InterstitialAd.createForAdRequest(adUnitId, {

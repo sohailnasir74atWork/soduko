@@ -1,5 +1,12 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {View, Text, StyleSheet, TouchableOpacity, FlatList} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Dimensions,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   STORAGE_KEY_Battels,
@@ -76,15 +83,18 @@ const Battels = ({navigation}) => {
         disabled={isCellDisabled(item)}
         style={[
           styles.row,
-          {backgroundColor: mode === 'light'
-          ? 'white'
-          : mode === 'light2'
-          ? 'white'
-          : mode === 'dark'
-          ? dark_bg_color
-          : mode === 'dark2'
-          ? dark2_bg_color
-          : 'default'},
+          {
+            backgroundColor:
+              mode === 'light'
+                ? 'white'
+                : mode === 'light2'
+                ? 'white'
+                : mode === 'dark'
+                ? dark_bg_color
+                : mode === 'dark2'
+                ? dark2_bg_color
+                : 'default',
+          },
           item > activeCell
             ? styles.disabled
             : item === activeCell
@@ -94,8 +104,26 @@ const Battels = ({navigation}) => {
             : null,
         ]}
         onPress={() => handleCellPress(item, levelName)}>
-        <Text style={item === activeCell ? styles.processText :(item <= activeCell ? styles.active : levelStyle)}>{item}</Text>
-        <Text style={item === activeCell ? styles.processText :(item <= activeCell ? styles.active : levelStyle)}>{levelName}</Text>
+        <Text
+          style={
+            item === activeCell
+              ? styles.processText
+              : item <= activeCell
+              ? styles.active
+              : levelStyle
+          }>
+          {item}
+        </Text>
+        <Text
+          style={
+            item === activeCell
+              ? styles.processText
+              : item <= activeCell
+              ? styles.active
+              : levelStyle
+          }>
+          {levelName}
+        </Text>
 
         <Text style={styles.duration}>
           {item > activeCell ? (
@@ -151,14 +179,21 @@ const Battels = ({navigation}) => {
           Win to Unlock More
         </Text>
       </View>
-      <FlatList
-        data={cells}
-        keyExtractor={item => item.toString()}
-        renderItem={renderItem}
-        numColumns={5}
-        showsVerticalScrollIndicator={false} // Set to false to hide vertical scrollbar
-        showsHorizontalScrollIndicator={false} // Set to false to hide horizontal scrollbar
-      />
+      <View
+        style={{
+          justifyContent: 'space-between',
+          width: '97%',
+          paddingBottom: Dimensions.get('window').height * 0.16,
+        }}>
+        <FlatList
+          data={cells}
+          keyExtractor={item => item.toString()}
+          renderItem={renderItem}
+          numColumns={4}
+          showsVerticalScrollIndicator={false} // Set to false to hide vertical scrollbar
+          showsHorizontalScrollIndicator={false} // Set to false to hide horizontal scrollbar
+        />
+      </View>
     </View>
   );
 };
@@ -169,29 +204,27 @@ const styles = StyleSheet.create({
     // padding: 20,
     // flexDirection: 'column',
     // flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: 'white',
   },
   row: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 60,
-    minHeight: 50,
-    padding: 5,
-    margin: 5,
-    // backgroundColor: 'red',
+    paddingVertical: 10,
+    margin: 3,
     borderRadius: 7,
     shadowColor: '#000000',
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.19,
-      shadowRadius: 5.62,
-      elevation: 2,
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.19,
+    shadowRadius: 5.62,
+    elevation: 2,
   },
+
   value: {
     fontSize: 12,
     color: 'red',
@@ -202,31 +235,22 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
-
-
   },
   disabled: {
     // backgroundColor: '#CFB08D',
     // opacity: 0.5,
     color: 'black',
     fontWeight: 'bold',
-    borderColor:'white',
-    borderWidth:1
-
+    borderColor: 'white',
+    borderWidth: 1,
   },
   process: {
     backgroundColor: '#4a154b',
-    
-
-
   },
   processText: {
-   
     color: 'white',
     fontWeight: 'bold',
     fontSize: 12,
-
-
   },
   levelName: {
     fontSize: 12,

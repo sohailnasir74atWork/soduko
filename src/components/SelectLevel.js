@@ -1,5 +1,12 @@
 import React, {useEffect, useRef, useContext, useState} from 'react';
-import {View, Text, TouchableOpacity, StyleSheet, Animated, Clipboard} from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  Animated,
+  Clipboard,
+} from 'react-native';
 import GridWithAnimation from '../grid';
 import AppContext from './globleState/AppContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,16 +27,24 @@ import {
 import SettingContainer from './helper/SettingContainer';
 
 const SelectLevels = ({navigation}) => {
-  const {toggleTheme, mode, shouldRedirect, globelLevel, redirect, setreDirect, setShouldRedirect} = useContext(AppContext);
-  const [guide, setGuide] = useState()
+  const {
+    toggleTheme,
+    mode,
+    shouldRedirect,
+    globelLevel,
+    redirect,
+    setreDirect,
+    setShouldRedirect,
+  } = useContext(AppContext);
+  const [guide, setGuide] = useState();
   useEffect(() => {
     // Save the updated game stats back to local storage
     const saveGameState = async () => {
       try {
         const gameState = {
-         guide
+          guide,
         };
-  
+
         await AsyncStorage.setItem(
           STORAGE_KEY_First_Play,
           JSON.stringify(gameState),
@@ -38,10 +53,10 @@ const SelectLevels = ({navigation}) => {
         console.error('Error saving game state to storage:', error);
       }
     };
-  
+
     saveGameState();
   }, [guide]); // Run the effect whenever gameStats changes
-  console.log('saved_state',redirect)
+  console.log('saved_state', redirect);
   const animations = [0, 1, 2, 3].map(() => new Animated.Value(0)); // Adjusted to 6 rows
   const CONSTANT = {
     UNASSIGNED: 0,
@@ -51,12 +66,12 @@ const SelectLevels = ({navigation}) => {
     LEVEL_NAME: ['Easy', 'Medium', 'Hard', 'Expert'],
     LEVEL: [11, 23, 38, 47], // Make sure this array has the same length as LEVEL_NAME
   };
-const navigateToGame = ()=>{
-  navigation.navigate('game', {level: globelLevel});
-}
-const navigateToGuide = ()=>{
-  navigation.navigate('guide', {level: globelLevel});
-}
+  const navigateToGame = () => {
+    navigation.navigate('game', {level: globelLevel});
+  };
+  const navigateToGuide = () => {
+    navigation.navigate('guide', {level: globelLevel});
+  };
 
   useEffect(() => {
     // Run this effect only once when the component mounts
@@ -68,8 +83,7 @@ const navigateToGuide = ()=>{
         useNativeDriver: true,
       }),
     );
-    
-  
+
     Animated.stagger(200, staggeredAnimations).start();
   }, []);
 
@@ -79,7 +93,7 @@ const navigateToGuide = ()=>{
       reset: true,
     });
   };
-  
+
   return (
     <View
       style={[
@@ -97,53 +111,56 @@ const navigateToGuide = ()=>{
               : 'default',
         },
       ]}>
-          <AwesomeAlert
+      <AwesomeAlert
         show={redirect}
         showProgress={false}
-        title="Lets Begin!"
+        title="Tutorial"
         titleStyle={{
           fontSize: 20,
           textAlign: 'center',
           fontWeight: 'bold',
         }}
-        message={`Have you played Sudoku before ?`}
+        message={`Do you want to start tutorial ?`}
         closeOnTouchOutside={false}
         closeOnHardwareBackPress={false}
         showCancelButton={true}
         showConfirmButton={true}
-        confirmText="NO"
-        cancelText='Yes'
-        confirmButtonColor="#DD6B55"
+        confirmText="Yes"
+        cancelText="No"
+        confirmButtonColor="green"
         confirmButtonTextStyle={{
           fontSize: 18,
           fontWeight: 'bold',
           borderRadius: 10,
         }}
-        cancelButtonStyle={
-          {
-            
-         backgroundColor:'green'}
-        }
-        cancelButtonTextStyle={
-          {
-            
-         fontWeight:'bold'}
-        }
-        onCancelPressed={()=>{setreDirect(false); setGuide(false)}}
+        cancelButtonStyle={{
+          backgroundColor: '#DD6B55',
+        }}
+        cancelButtonTextStyle={{
+          fontWeight: 'bold',
+        }}
+        onCancelPressed={() => {
+          setreDirect(false);
+          setGuide(false);
+        }}
         onConfirmPressed={navigateToGuide}
         overlayStyle={{
           backgroundColor: 'rgba(0, 0, 0, 0.5)',
         }}
-        contentContainerStyle={{
-        }}
+        contentContainerStyle={{}}
         messageStyle={{
           fontSize: 16,
           fontWeight: 'bold',
           paddingVertical: 10,
         }}
       />
-      <SettingContainer mode={mode} toggleTheme={toggleTheme} select navigateToGuide={navigateToGuide}/>
-    
+      <SettingContainer
+        mode={mode}
+        toggleTheme={toggleTheme}
+        select
+        navigateToGuide={navigateToGuide}
+      />
+
       <View
         style={{
           flexDirection: 'row',
@@ -198,11 +215,12 @@ const navigateToGuide = ()=>{
           </TouchableOpacity>
         </Animated.View>
       ))}
-      {shouldRedirect && <TouchableOpacity style={styles.button2} onPress={navigateToGame}>
-            <Text style={styles.buttonText}>Continue</Text>
-          </TouchableOpacity>
-       }
-       {/* {!shouldRedirect && <TouchableOpacity style={styles.button2} onPress={navigateToGuide}>
+      {shouldRedirect && (
+        <TouchableOpacity style={styles.button2} onPress={navigateToGame}>
+          <Text style={styles.buttonText}>Continue</Text>
+        </TouchableOpacity>
+      )}
+      {/* {!shouldRedirect && <TouchableOpacity style={styles.button2} onPress={navigateToGuide}>
             <Text style={styles.buttonText}>How to Play</Text>
           </TouchableOpacity>
        } */}
@@ -235,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     minWidth: 200,
   },
-  
+
   buttonText: {
     color: 'white',
     fontSize: 18,

@@ -8,7 +8,7 @@ import {
   Animated,
   Easing,
   ActivityIndicator,
-  Image
+  Image,
 } from 'react-native';
 import Sound from 'react-native-sound';
 import AppContext from './globleState/AppContext';
@@ -51,9 +51,9 @@ const Guide = ({navigation}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showImage, setShowImage] = useState(true);
 
-
-  const {loaded, showInterstitialAd, mode, redirect, setreDirect} = useContext(AppContext);
-  const [guide, setGuide] = useState()
+  const {loaded, showInterstitialAd, mode, redirect, setreDirect} =
+    useContext(AppContext);
+  const [guide, setGuide] = useState();
   const [validity, setValidity] = useState(
     Array.from({length: 9}, () => Array(9).fill(true)),
   );
@@ -67,14 +67,15 @@ const Guide = ({navigation}) => {
   const [disable, setdisable] = useState(false);
   const [tooltipHistory, setTooltipHistory] = useState([]); // Maintain a history of tooltip states
   const numDots = 5; // You can change this to the desired number of dots
+  const padding = Dimensions.get('window').height * 0.04;
   useEffect(() => {
     // Save the updated game stats back to local storage
     const saveGameState = async () => {
       try {
         const gameState = {
-         guide
+          guide,
         };
-  
+
         await AsyncStorage.setItem(
           STORAGE_KEY_First_Play,
           JSON.stringify(gameState),
@@ -83,7 +84,7 @@ const Guide = ({navigation}) => {
         console.error('Error saving game state to storage:', error);
       }
     };
-  
+
     saveGameState();
   }, [guide]); // Run the effect whenever gameStats changes
   useEffect(() => {
@@ -106,11 +107,11 @@ const Guide = ({navigation}) => {
       setdisable(lastTooltipState.disable);
     }
   };
-  const handelClose = ()=>{
-    setreDirect(false)
-    setGuide(false)
-    navigation.navigate('levels')
-  }
+  const handelClose = () => {
+    setreDirect(false);
+    setGuide(false);
+    navigation.navigate('levels');
+  };
   const loadGameState = async () => {
     try {
       // Hardcoded unsolved game
@@ -165,16 +166,16 @@ const Guide = ({navigation}) => {
       }
     };
   }, []);
-  const handleContinue = ()=>{
-    setShowImage(!showImage)
-  }
-  const handleContinue2 = ()=>{
+  const handleContinue = () => {
+    setShowImage(!showImage);
+  };
+  const handleContinue2 = () => {
     if (guide3) {
       setGuide3(false);
       setGuide4(true);
       setDotColor(dotColor + 1);
     }
-  }
+  };
   const handleRestart = () => {
     setBoard([]);
     setSolved([]);
@@ -195,7 +196,7 @@ const Guide = ({navigation}) => {
   };
 
   // ...
-  //  
+  //
   useEffect(() => {
     const sound = new Sound('wrong.mp3', Sound.MAIN_BUNDLE, error => {
       if (error) {
@@ -292,7 +293,7 @@ const Guide = ({navigation}) => {
   const renderBoard = () => {
     if (isLoading || !board.length) {
       return (
-        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+        <View style={{alignItems: 'center'}}>
           <ActivityIndicator size="large" color="#0000ff" />
         </View>
       );
@@ -457,7 +458,7 @@ const Guide = ({navigation}) => {
           flexDirection: 'row',
           justifyContent: 'flex-end',
           width: '97%',
-        }} >
+        }}>
         <Text>
           {' '}
           <Ionicons
@@ -491,94 +492,183 @@ const Guide = ({navigation}) => {
         </Text>
       </View>
       {showImage && (
-  <View style={{ flex: 1, backgroundColor: "white" }}>
-    <View style={{ flex: 1, justifyContent: "flex-start", alignItems: "center" }}>
-      <View style={{ height: 350, width: 350 }}>
-        <Image source={require("../../assets/image.jpeg")} style={{ height: "100%", width: "100%" }} />
-      </View>
-    </View>
-    <View style={{ padding: 30, marginBottom:30 }}>
-      <Text style={[styles.spacer, {textAlign:'justify', marginBottom:10, color: mode === 'light'
-              ? light_text_color
-              : mode === 'light2'
-              ? light2_text_color
-              : mode === 'dark'
-              ? dark_text_color
-              : mode === 'dark2'
-              ? dark2_text_color
-              : 'default',}]}>Classic Sudoku is a puzzle made up of nine 3 x 3 square grids.</Text>
-      <Text style={[styles.spacer, {textAlign:'justify', color: mode === 'light'
-              ? light_text_color
-              : mode === 'light2'
-              ? light2_text_color
-              : mode === 'dark'
-              ? dark_text_color
-              : mode === 'dark2'
-              ? dark2_text_color
-              : 'default',}]}>To finish the puzzle, you will have to place a number from one to nine in each box.</Text>
-    </View>
-    <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: 'flex-start', marginBottom: 40, marginRight:20 }}>
-      <TouchableOpacity
-        onPress={handleContinue}
-        style={{
-          paddingHorizontal: 10,
-          paddingVertical: 5,
-          backgroundColor: "#FF6F6F",
-          borderRadius: 5,
-        }}>
-        <Text style={{ color: "white", fontWeight: "bold" }}>Continue</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-)}
-
-    {!showImage && 
-    <View
-      style={[
-        styles.container,
-        {
-          backgroundColor:
-            mode === 'light'
-              ? light_bg_color
-              : mode === 'light2'
-              ? light2_bg_color
-              : mode === 'dark'
-              ? dark_bg_color
-              : mode === 'dark2'
-              ? dark2_bg_color
-              : 'default',
-        },
-      ]}>
-   
-      <View style={styles.mainSudokuGrid}>{renderBoard()}</View>
-
-      {!initialGuide && !guide3 && (
-        <View style={styles.numbers}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(number => (
-            <TouchableOpacity
-              key={number}
+        <View style={{backgroundColor: 'white'}}>
+          <View style={{justifyContent: 'flex-start', alignItems: 'center'}}>
+            <View
+              style={{
+                height: Dimensions.get('window').height * 0.5,
+                width: Dimensions.get('window').height * 0.5,
+              }}>
+              <Image
+                source={require('../../assets/image.jpeg')}
+                style={{height: '100%', width: '100%'}}
+              />
+            </View>
+          </View>
+          <View style={{paddingHorizontal: 30}}>
+            <Text
               style={[
-                styles.number,
+                styles.spacer,
                 {
-                  width: cellWidth,
-                  backgroundColor:
+                  textAlign: 'justify',
+                  marginBottom: 10,
+                  color:
                     mode === 'light'
-                      ? light_bg_color
+                      ? light_text_color
                       : mode === 'light2'
-                      ? light2_bg_color
+                      ? light2_text_color
                       : mode === 'dark'
-                      ? dark_bg_color
+                      ? dark_text_color
                       : mode === 'dark2'
-                      ? dark2_bg_color
+                      ? dark2_text_color
                       : 'default',
                 },
-              ]}
-              onPress={() =>
-                number === 4 || number === 5 ? handleNumberPress(number) : null
-              }>
+              ]}>
+              Classic Sudoku is a puzzle made up of nine 3 x 3 square grids.
+            </Text>
+            <Text
+              style={[
+                styles.spacer,
+                {
+                  textAlign: 'justify',
+                  color:
+                    mode === 'light'
+                      ? light_text_color
+                      : mode === 'light2'
+                      ? light2_text_color
+                      : mode === 'dark'
+                      ? dark_text_color
+                      : mode === 'dark2'
+                      ? dark2_text_color
+                      : 'default',
+                },
+              ]}>
+              To finish the puzzle, you will have to place a number from one to
+              nine in each box.
+            </Text>
+          </View>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'flex-end',
+              alignItems: 'flex-start',
+              marginBottom: 20,
+              marginRight: 20,
+            }}>
+            <TouchableOpacity
+              onPress={handleContinue}
+              style={{
+                paddingHorizontal: 10,
+                paddingVertical: 5,
+                backgroundColor: '#FF6F6F',
+                borderRadius: 5,
+              }}>
+              <Text style={{color: 'white', fontWeight: 'bold'}}>Continue</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {!showImage && (
+        <View
+          style={[
+            styles.container,
+            {
+              backgroundColor:
+                mode === 'light'
+                  ? light_bg_color
+                  : mode === 'light2'
+                  ? light2_bg_color
+                  : mode === 'dark'
+                  ? dark_bg_color
+                  : mode === 'dark2'
+                  ? dark2_bg_color
+                  : 'default',
+            },
+          ]}>
+          <View style={[styles.mainSudokuGrid, {paddingBottom: padding}]}>
+            {renderBoard()}
+          </View>
+
+          {!initialGuide && !guide3 && (
+            <View style={styles.numbers}>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(number => (
+                <TouchableOpacity
+                  key={number}
+                  style={[
+                    styles.number,
+                    {
+                      width: cellWidth,
+                      backgroundColor:
+                        mode === 'light'
+                          ? light_bg_color
+                          : mode === 'light2'
+                          ? light2_bg_color
+                          : mode === 'dark'
+                          ? dark_bg_color
+                          : mode === 'dark2'
+                          ? dark2_bg_color
+                          : 'default',
+                    },
+                  ]}
+                  onPress={() =>
+                    number === 4 || number === 5
+                      ? handleNumberPress(number)
+                      : null
+                  }>
+                  <Text
+                    style={[
+                      styles.text2,
+                      {
+                        color:
+                          mode === 'light'
+                            ? light_text_color
+                            : mode === 'light2'
+                            ? light2_text_color
+                            : mode === 'dark'
+                            ? dark_text_color
+                            : mode === 'dark2'
+                            ? dark2_text_color
+                            : 'default',
+                      },
+                    ]}>
+                    {number}
+                  </Text>
+                  {number === 4 && guide2 && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 0, // Adjust this value to position the tooltip above the number 4
+                      }}>
+                      <Tooltip
+                        message={"Select '4'"}
+                        isVisible={guide2}
+                        color={'green'}
+                      />
+                    </View>
+                  )}
+                  {number === 5 && guide4 && (
+                    <View
+                      style={{
+                        position: 'absolute',
+                        top: 0, // Adjust this value to position the tooltip above the number 4
+                      }}>
+                      <Tooltip
+                        message={"Select '5'"}
+                        isVisible={guide4}
+                        color={'green'}
+                      />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+          {guide3 && (
+            <View style={{paddingHorizontal: 20}}>
               <Text
                 style={[
-                  styles.text2,
+                  styles.spacer,
                   {
                     color:
                       mode === 'light'
@@ -592,145 +682,121 @@ const Guide = ({navigation}) => {
                         : 'default',
                   },
                 ]}>
-                {number}
+                Number '4' is incorrect because there is another '4' on the same
+                row.
               </Text>
-              {number === 4 && guide2 && (
+              <Text
+                style={[
+                  styles.spacer,
+                  {
+                    color:
+                      mode === 'light'
+                        ? light_text_color
+                        : mode === 'light2'
+                        ? light2_text_color
+                        : mode === 'dark'
+                        ? dark_text_color
+                        : mode === 'dark2'
+                        ? dark2_text_color
+                        : 'default',
+                  },
+                ]}>
+                The same number cannot be on the same row, column or squre.
+              </Text>
+            </View>
+          )}
+          {guide4 && (
+            <View style={{paddingHorizontal: 20}}>
+              <Text
+                style={[
+                  styles.spacer,
+                  {
+                    color:
+                      mode === 'light'
+                        ? light_text_color
+                        : mode === 'light2'
+                        ? light2_text_color
+                        : mode === 'dark'
+                        ? dark_text_color
+                        : mode === 'dark2'
+                        ? dark2_text_color
+                        : 'default',
+                  },
+                ]}>
+                Fill all the squares to solve the game.
+              </Text>
+            </View>
+          )}
+
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-around',
+              alignItems: 'center',
+              width: '80%',
+            }}>
+            <View style={{flexDirection: 'row'}}>
+              <Ionicons
+                name="arrow-back-circle"
+                size={35}
+                color={'black'}
+                style={{alignSelf: 'flex-end'}}
+                onPress={handleContinue}
+              />
+              <TouchableOpacity
+                onPress={handleRestart}
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 7,
+                  backgroundColor: '#FF6F6F',
+                  borderRadius: 5,
+                  marginLeft: 10, // Added margin to the Restart button
+                }}>
+                <Text style={{color: 'white', fontWeight: 'bold'}}>
+                  Restart
+                </Text>
+              </TouchableOpacity>
+            </View>
+            <View style={{flexDirection: 'row'}}>
+              {[...Array(numDots)].map((_, index) => (
                 <View
+                  key={index}
                   style={{
-                    position: 'absolute',
-                    top: 0, // Adjust this value to position the tooltip above the number 4
-                  }}>
-                  <Tooltip
-                    message={"Select '4'"}
-                    isVisible={guide2}
-                    color={'green'}
-                  />
-                </View>
-              )}
-              {number === 5 && guide4 && (
-                <View
-                  style={{
-                    position: 'absolute',
-                    top: 0, // Adjust this value to position the tooltip above the number 4
-                  }}>
-                  <Tooltip
-                    message={"Select '5'"}
-                    isVisible={guide4}
-                    color={'green'}
-                  />
-                </View>
-              )}
-            </TouchableOpacity>
-          ))}
+                    width: 12,
+                    height: 12,
+                    backgroundColor:
+                      index === dotColor - 1 ? '#3498db' : 'grey',
+                    borderRadius: 1,
+                    marginHorizontal: 3,
+                    marginVertical: 12,
+                  }}></View>
+              ))}
+            </View>
+            <View>
+              <TouchableOpacity
+                onPress={
+                  guide3 ? handleContinue2 : disable ? handelClose : null
+                }
+                style={{
+                  paddingHorizontal: 10,
+                  paddingVertical: 5,
+                  backgroundColor: 'green',
+                  borderRadius: 5,
+                  marginRight: 10,
+                }}>
+                {guide3 && (
+                  <Text style={{color: 'white', fontWeight: 'bold'}}>Next</Text>
+                )}
+                {disable && (
+                  <Text style={{color: 'white', fontWeight: 'bold'}}>
+                    Finish
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       )}
-      {guide3 && (
-        <View style={{padding: 20}}>
-          <Text style={[styles.spacer, {color: mode === 'light'
-              ? light_text_color
-              : mode === 'light2'
-              ? light2_text_color
-              : mode === 'dark'
-              ? dark_text_color
-              : mode === 'dark2'
-              ? dark2_text_color
-              : 'default',}]}>
-            Number '4' is incorrect because there is another '4' on the same
-            row.
-          </Text>
-          <Text style={[styles.spacer, {color: mode === 'light'
-              ? light_text_color
-              : mode === 'light2'
-              ? light2_text_color
-              : mode === 'dark'
-              ? dark_text_color
-              : mode === 'dark2'
-              ? dark2_text_color
-              : 'default',}]}>
-            The same number cannot be on the same row, column or squre.
-          </Text>
-        </View>
-      )}
-      {guide4 && (
-        <View style={{padding: 20}}>
-          <Text style={[styles.spacer, {color: mode === 'light'
-              ? light_text_color
-              : mode === 'light2'
-              ? light2_text_color
-              : mode === 'dark'
-              ? dark_text_color
-              : mode === 'dark2'
-              ? dark2_text_color
-              : 'default',}]}>
-            Fill all the squares to solve the game.
-          </Text>
-        </View>
-      )}
-
-
-
-<View
-  style={{
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    bottom: 150,
-    position: 'absolute',
-    width:"80%"
-  }}>
- <View style={{flexDirection:'row'}}>
- <Ionicons
-            name="arrow-back-circle"
-            size={35}
-            color={'black'}
-            style={{alignSelf: 'flex-end'}}
-            onPress={handleContinue}
-          />
-  <TouchableOpacity
-    onPress={handleRestart}
-    style={{
-      paddingHorizontal: 10,
-      paddingVertical: 7,
-      backgroundColor: '#FF6F6F',
-      borderRadius: 5,
-      marginLeft: 10, // Added margin to the Restart button
-    }}>
-    <Text style={{ color: 'white', fontWeight: 'bold' }}>Restart</Text>
-  </TouchableOpacity></View>
-<View style={{flexDirection:'row'}}>
-  {[...Array(numDots)].map((_, index) => (
-    <View
-      key={index}
-      style={{
-        width: 12,
-        height: 12,
-        backgroundColor: index === dotColor - 1 ? '#3498db' : 'grey',
-        borderRadius: 1,
-        marginHorizontal: 3,
-        marginVertical: 12,
-      }}></View>
-  ))}
-  
-</View>
-<View>
- <TouchableOpacity
-    onPress={guide3 ? handleContinue2 : (disable ? handelClose : null)}
-    style={{
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      backgroundColor: 'green',
-      borderRadius: 5,
-      marginRight: 10,
-    }}>
-   {guide3 && <Text style={{ color: 'white', fontWeight: 'bold' }}>Next</Text>}
-   {disable && <Text style={{ color: 'white', fontWeight: 'bold' }}>Finish</Text>}
-  </TouchableOpacity>
-  </View>
-</View>
-
-    </View>}
-    
     </View>
   );
 };
@@ -746,25 +812,20 @@ export const styles = StyleSheet.create({
   },
   mainSudokuGrid: {
     flexDirection: 'column',
-    // marginTop: 16,
-    minHeight: 360,
   },
   row: {
     flexDirection: 'row',
   },
   mainGridCell: {
-    maxHeight: 40,
+    height: Dimensions.get('window').height * 0.05,
     width: 30,
-
     backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: 13,
-
     borderColor: 'black',
     borderWidth: 0.5,
   },
-
   emptyCell: {
     color: 'lightblue',
   },
@@ -786,7 +847,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
-    marginVertical: 20,
+    marginVertical: 5,
+    paddingBottom: Dimensions.get('window').height * 0.02,
   },
 
   number: {
@@ -797,7 +859,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     fontSize: 14,
     cursor: 'pointer',
-    marginVertical: 5,
     flex: 1,
     marginHorizontal: 5,
     shadowColor: '#000000',
@@ -812,11 +873,15 @@ export const styles = StyleSheet.create({
 
   text: {
     color: 'grey',
-    fontSize: 30,
+    fontSize: 26,
+    lineHeight: 30,
+    margin: 0,
+    padding: 0,
   },
   text2: {
     color: 'grey',
-    fontSize: 36,
+    fontSize: 26,
+    lineHeight: 26,
   },
   dark: {
     color: 'grey',
@@ -827,11 +892,11 @@ export const styles = StyleSheet.create({
   },
   wrong: {
     color: 'red',
-    fontSize: 25,
+    fontSize: 20,
   },
   correct: {
     color: '#25D366',
-    fontSize: 25,
+    fontSize: 20,
   },
   spacer: {
     color: 'black',

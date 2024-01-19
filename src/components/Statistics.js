@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useContext} from 'react';
-import {View, Text, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet, ScrollView} from 'react-native';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import {
   dark2_bg_color,
@@ -40,7 +40,7 @@ const LevelStatistics = ({route}) => {
   // // Filter out the minimum value
   // const filteredMinTimeArray = timeArray.filter(time => time !== minTime);
   return (
-    <View
+    <ScrollView
       style={[
         styles.container,
         {
@@ -103,16 +103,24 @@ const LevelStatistics = ({route}) => {
             Games Started
           </Text>
         </View>
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>{stats.playedGames}</Text>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
+          {stats.playedGames}
+        </Text>
       </View>
       <View
         style={[
@@ -162,16 +170,24 @@ const LevelStatistics = ({route}) => {
           </Text>
         </View>
 
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>{stats.won}</Text>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
+          {stats.won}
+        </Text>
       </View>
       <View
         style={[
@@ -220,16 +236,22 @@ const LevelStatistics = ({route}) => {
             Success Rate
           </Text>
         </View>
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
           {
             stats.playedGames !== 0
               ? `${((stats.won / stats.playedGames) * 100).toFixed(0)}%`
@@ -285,16 +307,22 @@ const LevelStatistics = ({route}) => {
             Max Time
           </Text>
         </View>
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
           {isFinite(maxTime) ? secondsToTime(maxTime) : '00:00'}
         </Text>
       </View>
@@ -346,16 +374,22 @@ const LevelStatistics = ({route}) => {
             Min Time:
           </Text>
         </View>
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
           {isFinite(minTime) ? secondsToTime(minTime) : '00:00'}
         </Text>
       </View>
@@ -404,22 +438,29 @@ const LevelStatistics = ({route}) => {
                     : 'default',
               },
             ]}>
-            Average Palyed Time</Text>
+            Average Palyed Time
+          </Text>
         </View>
-        <Text style={[styles.value, {color:
-                  mode === 'light'
-                    ? light_text_color
-                    : mode === 'light2'
-                    ? light2_text_color
-                    : mode === 'dark'
-                    ? dark_text_color
-                    : mode === 'dark2'
-                    ? dark2_text_color
-                    : 'default',}]}>
+        <Text
+          style={[
+            styles.value,
+            {
+              color:
+                mode === 'light'
+                  ? light_text_color
+                  : mode === 'light2'
+                  ? light2_text_color
+                  : mode === 'dark'
+                  ? dark_text_color
+                  : mode === 'dark2'
+                  ? dark2_text_color
+                  : 'default',
+            },
+          ]}>
           {averageTime > 0 ? secondsToTime(averageTime.toFixed(0)) : '00:00'}
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -473,6 +514,18 @@ const StatisticsScreen = ({route, navigation}) => {
               navigation.navigate(levels[index]);
             },
           })}
+          options={{
+            tabBarLabel: ({focused}) => (
+              <Text
+                style={{
+                  fontWeight: 'bold',
+                  fontSize: 12,
+                  color: focused ? 'blue' : 'black',
+                }}>
+                {levels[index]}
+              </Text>
+            ),
+          }}
         />
       ))}
     </Tab.Navigator>
@@ -481,7 +534,6 @@ const StatisticsScreen = ({route, navigation}) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 15,
     paddingTop: 30,
   },
@@ -489,7 +541,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 80,
+    minHeight: 70,
     marginVertical: 5,
     backgroundColor: 'white',
     borderRadius: 10,
@@ -499,20 +551,20 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'black',
     paddingVertical: 10,
-    paddingHorizontal: 10,
+    paddingLeft: 10,
   },
   value: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     opacity: 0.8,
     color: 'black',
     // backgroundColor: '#3498db', // Change the background color as needed
     paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingRight: 20,
     // width:80,
     justifyContent: 'center',
     textAlign: 'center',
